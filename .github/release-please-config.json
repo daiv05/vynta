@@ -1,0 +1,13 @@
+{
+  "plugins": ["cargo-workspace"],
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "extra-files": [
+        "src-tauri/Cargo.toml",
+        "src-tauri/tauri.conf.json",
+        "src-tauri/tauri.microsoftstore.conf.json"
+      ]
+    }
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "app": {
+    "title": "Vynta",
+    "version": "v0.1.2",
+    "tabs": {
+      "home": "Inicio",
+      "hotkeys": "Atajos",
+      "settings": "Configuración"
+    }
+  },
+  "home": {
+    "title": "Modos",
+    "dock": {
+      "close": "Cerrar dock",
+      "color": "Color"
+    },
+    "actions": {
+      "liveDraw": "Dibujo en vivo",
+      "whiteboard": "Pizarra"
+    },
+    "modes": {
+      "draw": {
+        "title": "Live Draw",
+        "description": "Dibuja, escribe y agrega anotaciones directamente sobre la pantalla en tiempo real."
+      },
+      "cursor": {
+        "title": "Cursor Highlight",
+        "description": "Resalta el cursor con una forma y color para que siempre sea visible.",
+        "colors": "Colores",
+        "preview": "Vista previa",
+        "shape": "Forma",
+        "colorShape": "Color de forma",
+        "size": "Tamaño",
+        "shapes": {
+          "circle": "Círculo",
+          "square": "Cuadrado",
+          "diamond": "Rombo"
+        }
+      },
+      "spotlight": {
+        "title": "Focus Spotlight",
+        "description": "Enfoca la atención alrededor del cursor atenuando el resto de la pantalla.",
+        "visualization": "Visualización",
+        "preview": "Vista previa",
+        "background": "Fondo",
+        "opacity": "Opacidad",
+        "radius": "Radio",
+        "spotlightSize": "Tamaño del foco"
+      },
+      "whiteboard": {
+        "title": "Whiteboard",
+        "description": "Pizarra independiente con lienzo infinito para dibujar y organizar ideas.",
+        "visualization": "Visualización",
+        "showGrid": "Mostrar cuadrícula",
+        "toolbar": {
+          "export": "Exportar",
+          "exportSuccess": "Pizarra exportada exitosamente",
+          "exit": "Salir"
+        }
+      },
+      "zoom": {
+        "title": "Zoom",
+        "description": "Amplifica el área alrededor del cursor como una lupa para ver detalles finos.",
+        "visualization": "Visualización",
+        "preview": "Vista previa",
+        "zoomLevel": "Nivel de zoom",
+        "amplification": "Amplificación",
+        "lensSize": "Lupa",
+        "dimensions": "Dimensiones",
+        "motor": "Motor",
+        "motors": {
+          "dxgi": "DirectX (DXGI)",
+          "magnifier": "Magnification API"
+        },
+        "mode": "Modo",
+        "modes": {
+          "live": {
+             "title": "Live",
+             "description": "Puedes interactuar con otras ventanas mientras el zoom está activo. La ventana de zoom no es visible al tomar capturas/grabar pantalla."
+          },
+          "freeze": {
+             "title": "Freeze",
+             "description": "Una captura estática del momento. El zoom es visible al tomar capturas/grabar pantalla.",
+             "wheel": "Puedes hacer zoom con la rueda del ratón."
+          }
+        },
+        "magnifierDescription": "Puedes interactuar con otras ventanas mientras el zoom está activo. El zoom es visible al tomar capturas/grabar pantalla.",
+        "shapes": {
+          "circle": "Círculo",
+          "square": "Cuadrado"
+        }
+      }
+    },
+    "tools": {
+      "title": "Herramientas",
+      "draw": {
+        "title": "Dibujo",
+        "description": "Configuración de estilos y texto.",
+        "styles": "Estilos",
+        "defaultColor": "Color por defecto",
+        "editStyles": "Editar estilos",
+        "width": "Grosor",
+        "fillOpacity": "Opacidad de relleno",
+        "preview": "Vista previa",
+        "text": "Texto",
+        "font": "Tipografía",
+        "size": "Tamaño",
+        "sampleText": "Texto de muestra",
+        "autoErase": "Borrado automático",
+        "time": "Tiempo (segundos)"
+      },
+      "dock": {
+        "title": "Dock flotante",
+        "description": "Configura las herramientas disponibles y el comportamiento del dock.",
+        "activeTools": "Herramientas activas",
+        "orientation": "Orientación",
+        "orientations": {
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        }
+      }
+    }
+  },
+  "hotkeys": {
+    "title": "Atajos de teclado",
+    "placeholder": "Presiona una combinación",
+    "warnings": {
+      "conflicts": "Hay combinaciones duplicadas. Resuelve los conflictos para evitar comportamientos inesperados.",
+      "registrationError": "No se pudieron registrar algunos atajos. Revisa las combinaciones."
+    },
+    "shortcuts": {
+      "errors": {
+        "alreadyRegistered": "Ya está registrado",
+        "couldNotRegister": "No se pudo registrar"
+      },
+      "capturing": "Capturando combinación..."
+    },
+    "sections": {
+      "general": "Generales",
+      "tools": "Herramientas"
+    },
+    "actions": {
+      "openDraw": "Abrir Live Draw",
+      "openCursor": "Abrir Cursor Highlight",
+      "openSpotlight": "Abrir Focus Spotlight",
+      "openWhiteboard": "Abrir Whiteboard",
+      "openZoom": "Abrir Zoom"
+    },
+    "tools": {
+      "select": "Mover",
+      "pen": "Lápiz",
+      "marker": "Marcador",
+      "rect": "Rectángulo",
+      "line": "Línea",
+      "ellipse": "Elipse",
+      "arrow": "Flecha",
+      "text": "Texto",
+      "eraser": "Borrador",
+      "autoErase": "Borrado automático",
+      "smoothing": "Trazos suaves",
+      "undo": "Deshacer",
+      "redo": "Rehacer",
+      "clear": "Limpiar",
+      "toggleDock": "Mostrar/Ocultar Dock"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": "Tema",
+    "startWithWindows": "Iniciar con Windows",
+    "restorePreferences": "Restaurar preferencias",
+    "autoErase": "Auto-borrado",
+    "resetPreferences": "Restablecer preferencias",
+    "resetShortcuts": "Restablecer atajos",
+    "modals": {
+      "resetPreferences": {
+        "title": "Restaurar preferencias",
+        "message": "¿Estás seguro de que deseas restaurar todas las preferencias a sus valores por defecto?",
+        "confirm": "Restaurar",
+        "successMessage": "Preferencias restauradas exitosamente."
+      },
+      "resetShortcuts": {
+        "title": "Restablecer atajos de teclado",
+        "message": "¿Estás seguro de que deseas restablecer todos los atajos de teclado a sus valores por defecto?",
+        "confirm": "Restablecer",
+        "successMessage": "Atajos restablecidos exitosamente."
+      }
+    }
+  },
+  "modals": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "styleEditor": {
+      "title": "Editar colores rápidos",
+      "type": "Tipo",
+      "types": {
+        "color": "Color",
+        "gradient": "Gradiente"
+      },
+      "color": "Color",
+      "angle": "Ángulo",
+      "addStop": "Añadir color",
+      "removeStop": "Eliminar parada",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    }
+  },
+  "ui": {
+    "header": {
+      "controlCenter": "Centro de control",
+      "shortcuts": "Accesos directos",
+      "settings": "Configuración"
+    }
+  },
+  "tray": {
+    "draw": "Live Draw",
+    "spotlight": "Focus Spotlight",
+    "highlight": "Cursor Highlight",
+    "whiteboard": "Whiteboard",
+    "zoom": "Zoom",
+    "config": "Configuración",
+    "exit": "Cerrar"
+  }
+}

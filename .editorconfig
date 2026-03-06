@@ -1,0 +1,98 @@
+root = true
+
+[*
+]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# JavaScript / TypeScript / Vue / JSON / CSS
+[*.{js,jsx,ts,tsx,vue,json,css,scss,less,html}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+
+# Vue single-file components
+[*.vue]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Rust
+[*.rs]
+indent_style = space
+indent_size = 4
+tab_width = 4
+trim_trailing_whitespace = true
+
+# TOML
+[*.toml]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# JSON
+[*.json]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+# Markdown
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+insert_final_newline = true
+max_line_length = off
+
+# YAML
+[*.yml]
+indent_style = space
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+trim_trailing_whitespace = true
+
+# Batch files
+[*.bat]
+end_of_line = crlf
+trim_trailing_whitespace = false
+
+# Makefiles must use tabs
+[Makefile]
+indent_style = tab
+trim_trailing_whitespace = false
+
+# Binary and image files
+[*.png]
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.jpg]
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.gif]
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.{code-workspace,code-workspace.json}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.{woff,woff2,ttf,ico}]
+insert_final_newline = false
+trim_trailing_whitespace = false
