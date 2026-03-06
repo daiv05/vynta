@@ -1,7 +1,7 @@
 {
   "name": "vynta-app",
   "private": true,
-  "version": "1.3.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "Productivity application for drawing on screen and desktop utilities.",
   "license": "MIT",
