@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Productivity application for drawing on screen and desktop utilities."
 authors = ["David Deras <david@deras.dev>"]
 edition = "2021"
-repository = "https://github.com/daiv05/vynta-app"
+repository = "https://github.com/daiv05/vynta"
 license = "MIT"
 
 [lib]

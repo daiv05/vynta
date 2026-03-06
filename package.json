@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/daiv05/vynta-app.git"
+    "url": "https://github.com/daiv05/vynta.git"
   },
   "keywords": [
     "tauri",

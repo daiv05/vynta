@@ -16,8 +16,8 @@ Ensure you also have the [Tauri prerequisites for Windows](https://tauri.app/sta
 
 ```bash
 # Clone the repository
-git clone https://github.com/daiv05/vynta-app.git
-cd vynta-app
+git clone https://github.com/daiv05/vynta.git
+cd vynta
 
 # Install frontend dependencies
 npm install
