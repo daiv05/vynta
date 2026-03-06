@@ -1,0 +1,225 @@
+{
+  "app": {
+    "title": "Vynta",
+    "version": "v0.1.2",
+    "tabs": {
+      "home": "Home",
+      "hotkeys": "Shortcuts",
+      "settings": "Settings"
+    }
+  },
+  "home": {
+    "title": "Modes",
+    "dock": {
+      "close": "Close dock",
+      "color": "Color"
+    },
+    "actions": {
+      "liveDraw": "Live Draw",
+      "whiteboard": "Whiteboard"
+    },
+    "modes": {
+      "draw": {
+        "title": "Live Draw",
+        "description": "Draw, write, and annotate directly on the screen in real-time."
+      },
+      "cursor": {
+        "title": "Cursor Highlight",
+        "description": "Highlight the cursor with a shape and color to make it always visible.",
+        "colors": "Colors",
+        "preview": "Preview",
+        "shape": "Shape",
+        "colorShape": "Shape Color",
+        "size": "Size",
+        "shapes": {
+          "circle": "Circle",
+          "square": "Square",
+          "diamond": "Diamond"
+        }
+      },
+      "spotlight": {
+        "title": "Focus Spotlight",
+        "description": "Focus attention around the cursor by dimming the rest of the screen.",
+        "visualization": "Visualization",
+        "preview": "Preview",
+        "background": "Background",
+        "opacity": "Opacity",
+        "radius": "Radius",
+        "spotlightSize": "Spotlight Size"
+      },
+      "whiteboard": {
+        "title": "Whiteboard",
+        "description": "Independent whiteboard with infinite canvas for drawing and organizing ideas.",
+        "visualization": "Visualization",
+        "showGrid": "Show Grid",
+        "toolbar": {
+          "export": "Export",
+          "exportSuccess": "Whiteboard exported successfully",
+          "exit": "Exit"
+        }
+      },
+      "zoom": {
+        "title": "Zoom",
+        "description": "Magnify the area around the cursor like a lens to see fine details.",
+        "visualization": "Visualization",
+        "preview": "Preview",
+        "zoomLevel": "Zoom Level",
+        "amplification": "Amplification",
+        "lensSize": "Lens",
+        "dimensions": "Dimensions",
+        "motor": "Motor",
+        "motors": {
+          "dxgi": "DirectX (DXGI)",
+          "magnifier": "Magnification API"
+        },
+        "mode": "Mode",
+        "modes": {
+          "live": {
+             "title": "Live",
+             "description": "You can interact with other windows while the zoom is active. The zoom window is not visible when taking screenshots/recording screen."
+          },
+          "freeze": {
+             "title": "Freeze",
+             "description": "A static capture of the moment. The zoom is visible when taking screenshots/recording screen.",
+             "wheel": "You can zoom with the mouse wheel."
+          }
+        },
+        "magnifierDescription": "You can interact with other windows while the zoom is active. The zoom is visible when taking screenshots/recording screen.",
+        "shapes": {
+          "circle": "Circle",
+          "square": "Square"
+        }
+      }
+    },
+    "tools": {
+      "title": "Tools",
+      "draw": {
+        "title": "Drawing",
+        "description": "Style and text configuration.",
+        "styles": "Styles",
+        "defaultColor": "Default Color",
+        "editStyles": "Edit Styles",
+        "width": "Width",
+        "fillOpacity": "Fill Opacity",
+        "preview": "Preview",
+        "text": "Text",
+        "font": "Font",
+        "size": "Size",
+        "sampleText": "Sample Text",
+        "autoErase": "Auto-erase",
+        "time": "Time (seconds)"
+      },
+      "dock": {
+        "title": "Floating Dock",
+        "description": "Configure available tools and dock behavior.",
+        "activeTools": "Active Tools",
+        "orientation": "Orientation",
+        "orientations": {
+          "horizontal": "Horizontal",
+          "vertical": "Vertical"
+        }
+      }
+    }
+  },
+  "hotkeys": {
+    "title": "Keyboard Shortcuts",
+    "placeholder": "Press a combination",
+    "warnings": {
+      "conflicts": "Duplicate combinations found. Resolve conflicts to avoid unexpected behavior.",
+      "registrationError": "Could not register some shortcuts. Check combinations."
+    },
+    "shortcuts": {
+      "errors": {
+        "alreadyRegistered": "Already registered",
+        "couldNotRegister": "Could not register"
+      },
+      "capturing": "Capturing combination..."
+    },
+    "sections": {
+      "general": "General",
+      "tools": "Tools"
+    },
+    "actions": {
+      "openDraw": "Open Live Draw",
+      "openCursor": "Open Cursor Highlight",
+      "openSpotlight": "Open Focus Spotlight",
+      "openWhiteboard": "Open Whiteboard",
+      "openZoom": "Open Zoom"
+    },
+    "tools": {
+      "select": "Move",
+      "pen": "Pen",
+      "marker": "Marker",
+      "rect": "Rectangle",
+      "line": "Line",
+      "ellipse": "Ellipse",
+      "arrow": "Arrow",
+      "text": "Text",
+      "eraser": "Eraser",
+      "autoErase": "Auto-erase",
+      "smoothing": "Smoothing",
+      "undo": "Undo",
+      "redo": "Redo",
+      "clear": "Clear",
+      "toggleDock": "Toggle Dock"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "startWithWindows": "Start with Windows",
+    "restorePreferences": "Restore preferences",
+    "autoErase": "Auto-erase",
+    "resetPreferences": "Reset preferences",
+    "resetShortcuts": "Reset shortcuts",
+    "modals": {
+      "resetPreferences": {
+        "title": "Restore Preferences",
+        "message": "Are you sure you want to restore all preferences to their default values?",
+        "confirm": "Restore",
+        "successMessage": "Preferences reset successfully."
+      },
+      "resetShortcuts": {
+        "title": "Reset Shortcuts",
+        "message": "Are you sure you want to reset all keyboard shortcuts to their default values?",
+        "confirm": "Reset",
+        "successMessage": "Shortcuts reset successfully."
+      }
+    }
+  },
+  "modals": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "styleEditor": {
+      "title": "Edit Quick Colors",
+      "type": "Type",
+      "types": {
+        "color": "Color",
+        "gradient": "Gradient"
+      },
+      "color": "Color",
+      "angle": "Angle",
+      "addStop": "Add Color",
+      "removeStop": "Remove Stop",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "ui": {
+    "header": {
+      "controlCenter": "Control Center",
+      "shortcuts": "Shortcuts",
+      "settings": "Settings"
+    }
+  },
+  "tray": {
+    "draw": "Live Draw",
+    "spotlight": "Focus Spotlight",
+    "highlight": "Cursor Highlight",
+    "whiteboard": "Whiteboard",
+    "zoom": "Zoom",
+    "config": "Settings",
+    "exit": "Exit"
+  }
+}

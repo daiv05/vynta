@@ -1,0 +1,57 @@
+{
+  "name": "vynta-app",
+  "private": true,
+  "version": "1.3.1",
+  "type": "module",
+  "description": "Productivity application for drawing on screen and desktop utilities.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daiv05/vynta-app.git"
+  },
+  "keywords": [
+    "tauri",
+    "vue",
+    "desktop",
+    "productivity",
+    "drawing"
+  ],
+  "author": "David Deras <david@deras.dev>",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "types": "vue-tsc --noEmit",
+    "tauri": "tauri",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-autostart": "^2",
+    "@tauri-apps/plugin-global-shortcut": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-store": "^2",
+    "lucide-vue-next": "^0.575.0",
+    "vitepress-mermaid-renderer": "^1.1.11",
+    "vue": "^3.5.13",
+    "vue-i18n": "^11.2.8"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
+    "@tauri-apps/cli": "^2",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "husky": "^9.1.7",
+    "oxlint": "^1.42.0",
+    "pinia": "^3.0.4",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitepress": "^2.0.0-alpha.16",
+    "vue-tsc": "^3.2.4"
+  }
+}

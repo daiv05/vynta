@@ -1,0 +1,87 @@
+name: autofix.ci
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'src-tauri/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+      - 'oxlint.json'
+      - '.github/workflows/autofix.yml'
+
+concurrency:
+  group: autofix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      rust: ${{ steps.filter.outputs.rust }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/**'
+              - 'package.json'
+              - 'package-lock.json'
+            rust:
+              - 'src-tauri/**'
+
+  format:
+    name: Run Autofix
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: needs.changes.outputs.frontend == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: needs.changes.outputs.frontend == 'true'
+        run: npm ci
+
+      - name: Formatear Frontend (Oxlint)
+        if: needs.changes.outputs.frontend == 'true'
+        continue-on-error: true
+        run: npm run lint:fix
+
+      - name: Setup Rust
+        if: needs.changes.outputs.rust == 'true'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Rust cache
+        if: needs.changes.outputs.rust == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Formatear Backend (Rust)
+        if: needs.changes.outputs.rust == 'true'
+        continue-on-error: true
+        working-directory: src-tauri
+        run: cargo fmt --all
+
+      - name: Apply autofix.ci
+        uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8

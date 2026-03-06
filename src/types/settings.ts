@@ -1,0 +1,42 @@
+import type { GradientStop, ModeShortcutId } from "../composables/useToolState";
+import type { ToolDefaults, ToolId } from "../types/tools";
+import type { OverlayDockOrientation, QuickColorSlot } from "../types/ui";
+
+export interface AppSettings {
+  selectedTool: ToolId;
+  strokeColor: string;
+  strokeWidth: number;
+  textFont: string;
+  textSize: number;
+  toolDefaults: Record<ToolId, ToolDefaults>;
+  smoothingEnabled: boolean;
+  cursorHighlightColor: string;
+  cursorHighlightSize: number;
+  cursorHighlightShape: "circle" | "square" | "diamond";
+  defaultStrokeColor: string;
+  quickColorSlots: Array<QuickColorSlot>;
+  shortcutMap: Record<string, string>;
+  gradientEnabled: boolean;
+  gradientType: "linear" | "radial";
+  gradientAngle: number;
+  gradientStops: GradientStop[];
+  startWithWindows: boolean;
+  restorePreferencesOnLaunch: boolean;
+  previewEnabled: boolean;
+  overlayDockPosition: { x: number; y: number };
+  whiteboardDockPosition: { x: number; y: number };
+  overlayDockOrientation: OverlayDockOrientation;
+  modeShortcutsEnabled: Record<ModeShortcutId, boolean>;
+  spotlightBackdrop: string;
+  spotlightRadius: number;
+  spotlightOpacity: number;
+  autoEraseEnabled: boolean;
+  autoEraseDelay: number;
+  whiteboardGridEnabled: boolean;
+  enabledTools: Record<ToolId, boolean>;
+  fillOpacity: number;
+  zoomLevel: number;
+  zoomSize: number;
+  zoomShape: "circle" | "square";
+  zoomMode: "live" | "freeze";
+}
