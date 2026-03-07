@@ -53,6 +53,10 @@ export default defineConfig({
       }
     ],
 
+    sitemap: {
+      hostname: 'https://vynta.deras.dev'
+    },
+
     socialLinks: [
       { icon: 'github', link: 'https://github.com/daiv05/vynta' }
     ],
