@@ -19,7 +19,6 @@ export function useMonitorContext() {
 
   onMounted(async () => {
     unlisten = await listen<MonitorContext>("monitor-context", (event) => {
-      console.log("[DEBUG] Received monitor-context event:", event.payload);
       monitorContext.value = event.payload;
       isReady.value = true;
     });
@@ -60,9 +59,6 @@ export function useMonitorContext() {
         monitorContext.value = payload;
         isReady.value = true;
       } catch {
-        console.log(
-          "[DEBUG] No monitorId in URL and active monitor fetch failed, defaulting to (0,0)",
-        );
         monitorContext.value = {
           monitorId: "legacy",
           virtualX: 0,

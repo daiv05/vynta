@@ -4,9 +4,21 @@
     ".": {
       "release-type": "node",
       "extra-files": [
-        "src-tauri/Cargo.toml",
-        "src-tauri/tauri.conf.json",
-        "src-tauri/tauri.microsoftstore.conf.json"
+        {
+          "type": "toml",
+          "path": "src-tauri/Cargo.toml",
+          "jsonpath": "$.package.version"
+        },
+        {
+          "type": "json",
+          "path": "src-tauri/tauri.conf.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "src-tauri/tauri.microsoftstore.conf.json",
+          "jsonpath": "$.version"
+        }
       ]
     }
   }

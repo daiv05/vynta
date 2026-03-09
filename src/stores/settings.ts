@@ -95,7 +95,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const zoomLevel = ref(2);
   const zoomSize = ref(300);
   const zoomShape = ref<"circle" | "square">("circle");
-  const zoomMode = ref<"live" | "freeze">("live");
+  const zoomMode = ref<"live" | "freeze">("freeze");
   const zoomMotor = ref<"dxgi" | "magnifier">("dxgi");
 
   // System
@@ -426,14 +426,10 @@ export const useSettingsStore = defineStore("settings", () => {
         await persist();
       }
 
-      // Sync zoom motor with backend
       try {
-        const backendMotor = await invoke<string>("get_zoom_backend_cmd");
-        if (backendMotor === "dxgi" || backendMotor === "magnifier") {
-          zoomMotor.value = backendMotor;
-        }
+        await invoke("set_zoom_backend_cmd", { backend: zoomMotor.value });
       } catch (e) {
-        console.error("Failed to fetch zoom backend motor from rust", e);
+        console.error("Failed to sync zoom backend motor to rust", e);
       }
     } catch (err) {
       console.error("Failed to hydrate settings:", err);
@@ -478,7 +474,7 @@ export const useSettingsStore = defineStore("settings", () => {
     zoomLevel.value = 2;
     zoomSize.value = 300;
     zoomShape.value = "circle";
-    zoomMode.value = "live";
+    zoomMode.value = "freeze";
     zoomMotor.value = "dxgi";
     startWithWindows.value = false;
     restorePreferencesOnLaunch.value = true;
