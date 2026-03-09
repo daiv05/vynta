@@ -1,6 +1,6 @@
 [package]
 name = "vynta-app"
-version = "1.1.1"
+version = "1.1.2"
 description = "Productivity application for drawing on screen and desktop utilities."
 authors = ["David Deras <david@deras.dev>"]
 edition = "2021"

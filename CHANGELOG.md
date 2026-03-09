@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2](https://github.com/daiv05/vynta/compare/vynta-app-v1.1.1...vynta-app-v1.1.2) (2026-03-09)
+
+
+### Bug Fixes
+
+* branch correction for updating to update Cargo.lock ([7ad4895](https://github.com/daiv05/vynta/commit/7ad4895b0c7ab4963995a59e608cdd2906d9d4de))
+* magnifier and release please config ([ac7f760](https://github.com/daiv05/vynta/commit/ac7f760df3c5e19b95b00eac8c779be64058452d))
+* magnifier motor/mode improvements ([e6c784b](https://github.com/daiv05/vynta/commit/e6c784bf1e40a26cac20b0c8935cafd4c0d00036))
+* release please config ([4f2f0ca](https://github.com/daiv05/vynta/commit/4f2f0caff950105f0bcebf9245433b2104ece078))
+
 ## [1.1.1](https://github.com/daiv05/vynta/compare/vynta-app-v1.1.0...vynta-app-v1.1.1) (2026-03-09)
 
 
