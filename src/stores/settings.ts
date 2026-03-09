@@ -426,14 +426,10 @@ export const useSettingsStore = defineStore("settings", () => {
         await persist();
       }
 
-      // Sync zoom motor with backend
       try {
-        const backendMotor = await invoke<string>("get_zoom_backend_cmd");
-        if (backendMotor === "dxgi" || backendMotor === "magnifier") {
-          zoomMotor.value = backendMotor;
-        }
+        await invoke("set_zoom_backend_cmd", { backend: zoomMotor.value });
       } catch (e) {
-        console.error("Failed to fetch zoom backend motor from rust", e);
+        console.error("Failed to sync zoom backend motor to rust", e);
       }
     } catch (err) {
       console.error("Failed to hydrate settings:", err);

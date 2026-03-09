@@ -128,11 +128,6 @@ pub fn show_mode_windows_inner(app: &AppHandle, mode: Mode, show: bool) -> Resul
         y: target_monitor.y,
     }));
 
-    println!(
-        "[DEBUG] Setting window size to {}x{} at {},{}",
-        target_monitor.width, target_monitor.height, target_monitor.x, target_monitor.y
-    );
-
     let _ = window.emit(
         "monitor-context",
         MonitorContextPayload {
@@ -409,8 +404,7 @@ pub fn emit_mode_visibility_event(app: &AppHandle, mode: Mode, visible: bool) {
 pub fn handle_mode_visibility(app: &AppHandle, mode: Mode, visible: bool) -> Result<(), String> {
     if mode == Mode::Zoom && crate::get_zoom_backend() == "magnifier" {
         if visible {
-            if let Some(main_window) = app.get_webview_window("main") {
-                let _ = main_window.hide();
+            if let Some(_main_window) = app.get_webview_window("main") {
             }
             if let Some(window) = app.get_webview_window("whiteboard") {
                 let _ = window.hide();
@@ -429,8 +423,10 @@ pub fn handle_mode_visibility(app: &AppHandle, mode: Mode, visible: bool) -> Res
     }
 
     if visible {
-        if let Some(main_window) = app.get_webview_window("main") {
-            let _ = main_window.hide();
+        if mode != Mode::Zoom {
+            if let Some(main_window) = app.get_webview_window("main") {
+                let _ = main_window.hide();
+            }
         }
 
         if let Some(window) = app.get_webview_window("whiteboard") {

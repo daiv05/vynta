@@ -94,14 +94,12 @@ unsafe fn mag_thread(tx: std::sync::mpsc::Sender<Result<(), String>>) {
         if let Some(proc) = proc {
             let set_dpi: SetThreadDpiAwarenessContextFn = std::mem::transmute(proc);
             set_dpi(-4);
-            eprintln!("[magnifier] DPI awareness set to PER_MONITOR_AWARE_V2");
         }
     }
     if !MagInitialize().as_bool() {
         let _ = tx.send(Err("MagInitialize failed".into()));
         return;
     }
-    eprintln!("[magnifier] MagInitialize OK");
 
     let hinstance: HINSTANCE = match GetModuleHandleW(None) {
         Ok(h) => h.into(),
@@ -144,7 +142,6 @@ unsafe fn mag_thread(tx: std::sync::mpsc::Sender<Result<(), String>>) {
             return;
         }
     };
-    eprintln!("[magnifier] host created");
 
     let _ = SetLayeredWindowAttributes(host_hwnd, COLORREF(0), 255, LWA_ALPHA);
 
@@ -170,7 +167,6 @@ unsafe fn mag_thread(tx: std::sync::mpsc::Sender<Result<(), String>>) {
             return;
         }
     };
-    eprintln!("[magnifier] child created");
 
     apply_transform(mag_hwnd, load_zoom());
 
@@ -298,25 +294,13 @@ unsafe fn tick() {
     );
 
     let _ = InvalidateRect(Some(c), None, true);
-
-    static LOGGED: AtomicBool = AtomicBool::new(false);
-    if !LOGGED.swap(true, Ordering::Relaxed) {
-        eprintln!(
-            "[magnifier] first tick ok: cursor=({},{}) src=({},{},{},{})",
-            pt.x, pt.y, source.left, source.top, source.right, source.bottom
-        );
-    }
 }
 
 unsafe fn apply_transform(mag: HWND, zoom: f32) {
     let mut t = MAGTRANSFORM {
         v: [zoom, 0.0, 0.0, 0.0, zoom, 0.0, 0.0, 0.0, 1.0],
     };
-    let ok = MagSetWindowTransform(mag, &mut t);
-    eprintln!(
-        "[magnifier] MagSetWindowTransform({zoom}) = {}",
-        ok.as_bool()
-    );
+    let _ = MagSetWindowTransform(mag, &mut t);
 }
 
 unsafe fn set_circle(hwnd: HWND, size: u32) {
