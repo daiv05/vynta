@@ -300,7 +300,11 @@ unsafe fn apply_transform(mag: HWND, zoom: f32) {
     let mut t = MAGTRANSFORM {
         v: [zoom, 0.0, 0.0, 0.0, zoom, 0.0, 0.0, 0.0, 1.0],
     };
-    let _ = MagSetWindowTransform(mag, &mut t);
+    let ok = MagSetWindowTransform(mag, &mut t);
+    eprintln!(
+        "[magnifier] MagSetWindowTransform({zoom}) = {}",
+        ok.as_bool()
+    );
 }
 
 unsafe fn set_circle(hwnd: HWND, size: u32) {
