@@ -445,11 +445,11 @@ pub fn get_zoom_backend_cmd() -> String {
 #[tauri::command]
 pub fn set_zoom_backend_cmd(backend: String) -> Result<(), String> {
     crate::set_zoom_backend_internal(backend.clone());
-    
+
     #[cfg(target_os = "windows")]
     if backend == "dxgi" {
         crate::magnifier::mag_stop();
     }
-    
+
     Ok(())
 }

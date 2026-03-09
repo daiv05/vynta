@@ -404,8 +404,7 @@ pub fn emit_mode_visibility_event(app: &AppHandle, mode: Mode, visible: bool) {
 pub fn handle_mode_visibility(app: &AppHandle, mode: Mode, visible: bool) -> Result<(), String> {
     if mode == Mode::Zoom && crate::get_zoom_backend() == "magnifier" {
         if visible {
-            if let Some(_main_window) = app.get_webview_window("main") {
-            }
+            if let Some(_main_window) = app.get_webview_window("main") {}
             if let Some(window) = app.get_webview_window("whiteboard") {
                 let _ = window.hide();
                 let _ = app.emit(
