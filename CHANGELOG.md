@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/daiv05/vynta/compare/vynta-app-v1.1.0...vynta-app-v1.1.1) (2026-03-09)
+
+
+### Bug Fixes
+
+* single instance initialization ([04625c8](https://github.com/daiv05/vynta/commit/04625c8ad0c1a19fb78927450a903d58fee71a20))
+* single instance initialization ([0ff8832](https://github.com/daiv05/vynta/commit/0ff883290f2c791586be905424c810b85b437b30))
+
 ## [1.1.0](https://github.com/daiv05/vynta/compare/vynta-app-v1.0.0...vynta-app-v1.1.0) (2026-03-06)
 
 
