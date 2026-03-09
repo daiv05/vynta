@@ -24,7 +24,7 @@ Think of it as the **Windows alternative to Presentify** — annotations, cursor
 ## Installation
 
 ### Microsoft Store
-1. Download the latest release from [Microsoft Store](https://apps.microsoft.com/detail/9PDH2H0KDGHC)
+1. Install Vynta from the [Microsoft Store](https://apps.microsoft.com/detail/9PDH2H0KDGHC)
 2. Launch Vynta from the Start Menu or system tray
 
 ### GitHub Releases
