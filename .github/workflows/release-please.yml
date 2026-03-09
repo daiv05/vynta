@@ -30,13 +30,19 @@ jobs:
       - name: Update Cargo.lock
         if: steps.release.outputs.prs_created == 'true'
         run: |
-          BRANCH="${{ fromJSON(steps.release.outputs.pr).headBranchName }}"
-          git fetch origin "$BRANCH:$BRANCH"
+          BRANCH="${{ fromJSON(steps.release.outputs.prs)[0].headBranchName }}"
+
+          git fetch origin "$BRANCH"
           git checkout "$BRANCH"
+
           cd src-tauri
-          cargo update
+          cargo generate-lockfile
+          cd ..
+
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add Cargo.lock
+
+          git add src-tauri/Cargo.lock
           git commit -m "chore: update Cargo.lock" || echo "No changes to commit"
-          git push
+
+          git push origin "$BRANCH"
