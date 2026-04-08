@@ -110,6 +110,27 @@ watch(
   },
 );
 const dockPosition = ref({ ...whiteboardDockPosition.value });
+const dockTooltipPlacement = computed<"top" | "bottom" | "left" | "right">(() => {
+  const viewportWidth = globalThis.innerWidth || 1920;
+  const viewportHeight = globalThis.innerHeight || 1080;
+  const dockWidth = dockRef.value?.offsetWidth ?? 320;
+  const dockHeight = dockRef.value?.offsetHeight ?? 120;
+
+  const spaceTop = dockPosition.value.y;
+  const spaceBottom = viewportHeight - (dockPosition.value.y + dockHeight);
+  const spaceLeft = dockPosition.value.x;
+  const spaceRight = viewportWidth - (dockPosition.value.x + dockWidth);
+
+  if (overlayDockOrientation.value === "vertical") {
+    if (spaceRight < 160 && spaceLeft > spaceRight) return "left";
+    return "right";
+  }
+
+  if (spaceTop < 80 && spaceBottom > spaceTop) return "bottom";
+  if (spaceLeft < 96 && spaceRight > 160) return "right";
+  if (spaceRight < 96 && spaceLeft > 160) return "left";
+  return "top";
+});
 const dockHidden = ref(false);
 const dragging = ref(false);
 const dragOffset = ref({ x: 0, y: 0 });
@@ -349,6 +370,7 @@ onBeforeUnmount(() => {
         :show-drag-handle="true"
         :show-dock-actions="true"
         :show-close-button="false"
+        :tooltip-placement="dockTooltipPlacement"
         @drag-handle="startDockDrag"
         @undo="handleUndo"
         @redo="handleRedo"

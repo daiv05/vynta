@@ -31,6 +31,7 @@ const props = defineProps<{
   layout?: "horizontal" | "vertical";
   showDockActions?: boolean;
   showCloseButton?: boolean;
+  tooltipPlacement?: "top" | "bottom" | "left" | "right";
   showDragHandle?: boolean;
 }>();
 
@@ -135,7 +136,13 @@ function slotActive(slot: QuickColorSlot) {
 </script>
 
 <template>
-  <aside class="dock" :class="`dock-${props.layout ?? 'horizontal'}`">
+  <aside
+    class="dock"
+    :class="[
+      `dock-${props.layout ?? 'horizontal'}`,
+      `tooltip-${props.tooltipPlacement ?? 'top'}`,
+    ]"
+  >
     <button
       v-if="props.showDragHandle"
       type="button"
@@ -351,7 +358,7 @@ function slotActive(slot: QuickColorSlot) {
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
   position: relative;
   flex: 0 0 20px;
@@ -365,6 +372,7 @@ function slotActive(slot: QuickColorSlot) {
 
 .tooltip {
   position: relative;
+  z-index: 0;
 }
 
 .tooltip-text {
@@ -384,11 +392,51 @@ function slotActive(slot: QuickColorSlot) {
     opacity 0.15s ease,
     transform 0.15s ease;
   border: 1px solid rgba(93, 210, 255, 0.25);
+  z-index: 20;
+}
+
+.tooltip-bottom .tooltip-text {
+  top: calc(100% + 8px);
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip-left .tooltip-text {
+  right: calc(100% + 8px);
+  left: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.tooltip-right .tooltip-text {
+  left: calc(100% + 8px);
+  right: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
 }
 
 .tooltip:hover .tooltip-text {
   opacity: 1;
   transform: translateX(-50%) translateY(-2px);
+}
+
+.tooltip:hover {
+  z-index: 30;
+}
+
+.tooltip-bottom .tooltip:hover .tooltip-text {
+  transform: translateX(-50%) translateY(2px);
+}
+
+.tooltip-left .tooltip:hover .tooltip-text {
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.tooltip-right .tooltip:hover .tooltip-text {
+  transform: translateY(-50%) translateX(2px);
 }
 
 .color-dot.active {
@@ -401,6 +449,7 @@ function slotActive(slot: QuickColorSlot) {
   inset: 0;
   border-radius: 50%;
   background: var(--preview, #5dd2ff);
+  z-index: 0;
 }
 
 @media (max-width: 900px) {
