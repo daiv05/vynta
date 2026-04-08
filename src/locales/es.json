@@ -12,7 +12,16 @@
     "title": "Modos",
     "dock": {
       "close": "Cerrar dock",
-      "color": "Color"
+      "color": "Color",
+      "moreOptions": "Mas opciones",
+      "strokeDash": "Estilo de linea",
+      "lockSelection": "Bloquear/Desbloquear seleccion",
+      "toggleGroupSelection": "Agrupar/Desagrupar seleccion",
+      "dashOptions": {
+        "solid": "Solida",
+        "dashed": "Guiones",
+        "dotted": "Punteada"
+      }
     },
     "actions": {
       "liveDraw": "Dibujo en vivo",

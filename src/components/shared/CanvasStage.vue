@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref, toRef } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref, toRef } from "vue";
 import { useCanvasDrawing } from "../../composables/useCanvasDrawing";
 import type { ToolId } from "../../types/tools";
 
@@ -7,6 +7,7 @@ const props = defineProps<{
   selectedTool: ToolId;
   strokeColor: string;
   strokeWidth: number;
+  dashPattern: number[];
   textFont: string;
   textSize: number;
   smoothingEnabled: boolean;
@@ -38,6 +39,12 @@ const {
   updateTextAction,
   removeAction,
   setActionHidden,
+  copySelectedAction,
+  pasteCopiedAction,
+  duplicateSelectedAction,
+  toggleSelectedLock,
+  groupSelectedActions,
+  ungroupSelectedActions,
   undo,
   redo,
   clear,
@@ -51,6 +58,7 @@ const {
   tool: toRef(props, "selectedTool"),
   color: toRef(props, "strokeColor"),
   width: toRef(props, "strokeWidth"),
+  dashPattern: toRef(props, "dashPattern"),
   smoothingEnabled: toRef(props, "smoothingEnabled"),
   gradientEnabled: toRef(props, "gradientEnabled"),
   gradientType: toRef(props, "gradientType"),
@@ -74,6 +82,55 @@ const textAreaSize = reactive({ width: 160, height: 32 });
 const textInputRef = ref<HTMLTextAreaElement | null>(null);
 const textMirrorRef = ref<HTMLDivElement | null>(null);
 const resizeFrame = ref<number | null>(null);
+
+function handleSharedEditHotkeys(event: KeyboardEvent) {
+  if (textInput.visible) return;
+  const key = event.key.toLowerCase();
+  const isMeta = event.ctrlKey || event.metaKey;
+  if (!isMeta) return;
+
+  if (key === "c") {
+    if (copySelectedAction()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return;
+  }
+
+  if (key === "v") {
+    if (pasteCopiedAction()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return;
+  }
+
+  if (key === "d") {
+    if (duplicateSelectedAction()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return;
+  }
+
+  if (key === "l") {
+    if (toggleSelectedLock()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    return;
+  }
+
+  if (key === "g") {
+    const changed = event.shiftKey
+      ? ungroupSelectedActions()
+      : groupSelectedActions();
+    if (changed) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+}
 
 function getLocalPoint(event: PointerEvent) {
   const container = containerRef.value;
@@ -260,6 +317,26 @@ function updateTextAreaSize() {
   textarea.scrollTop = 0;
 }
 
+function toggleSelectionLock() {
+  return toggleSelectedLock();
+}
+
+function groupSelection() {
+  return groupSelectedActions();
+}
+
+function ungroupSelection() {
+  return ungroupSelectedActions();
+}
+
+onMounted(() => {
+  globalThis.addEventListener("keydown", handleSharedEditHotkeys);
+});
+
+onBeforeUnmount(() => {
+  globalThis.removeEventListener("keydown", handleSharedEditHotkeys);
+});
+
 defineExpose({
   canvasRef,
   containerRef,
@@ -272,6 +349,9 @@ defineExpose({
   setZoom,
   pan,
   downloadSnapshot,
+  toggleSelectionLock,
+  groupSelection,
+  ungroupSelection,
 });
 </script>
 

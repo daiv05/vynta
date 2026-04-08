@@ -16,6 +16,7 @@ export type ToolId =
 export type ToolDefaults = {
   strokeColor: string;
   strokeWidth: number;
+  dashPattern: number[];
   textFont: string;
   textSize: number;
 };

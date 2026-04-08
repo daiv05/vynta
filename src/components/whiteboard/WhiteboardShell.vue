@@ -33,6 +33,7 @@ const toolsStore = useToolsStore();
 const {
   strokeColor,
   strokeWidth,
+  dashPattern,
   textFont,
   textSize,
   smoothingEnabled,
@@ -207,6 +208,7 @@ const overlayPayload = computed<OverlayPayload>(() => ({
   enabledTools: { ...enabledTools.value } as Record<ToolId, boolean>,
   strokeColor: strokeColor.value,
   strokeWidth: strokeWidth.value,
+  dashPattern: [...dashPattern.value],
   textFont: textFont.value,
   textSize: textSize.value,
   smoothingEnabled: smoothingEnabled.value,
@@ -240,6 +242,7 @@ function applyPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
+  settingsStore.setDashPattern([...payload.dashPattern]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
   settingsStore.setSmoothingEnabled(payload.smoothingEnabled);
@@ -275,6 +278,16 @@ function handleRedo() {
 
 function handleClear() {
   clearCanvas();
+}
+
+function handleToggleLockSelection() {
+  canvasStageRef.value?.toggleSelectionLock?.();
+}
+
+function handleToggleGroupSelection() {
+  const grouped = canvasStageRef.value?.groupSelection?.();
+  if (grouped) return;
+  canvasStageRef.value?.ungroupSelection?.();
 }
 
 function handleExport() {
@@ -343,6 +356,7 @@ onBeforeUnmount(() => {
       :selected-tool="selectedTool"
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
+      :dash-pattern="dashPattern"
       :text-font="textFont"
       :text-size="textSize"
       :smoothing-enabled="smoothingEnabled"
@@ -374,6 +388,8 @@ onBeforeUnmount(() => {
         @drag-handle="startDockDrag"
         @undo="handleUndo"
         @redo="handleRedo"
+        @toggle-lock="handleToggleLockSelection"
+        @toggle-group-selection="handleToggleGroupSelection"
         @clear-canvas="handleClear"
         @open-config="handleExit"
         @close-dock="handleHideDock"

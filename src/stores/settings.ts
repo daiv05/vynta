@@ -10,6 +10,7 @@ import type { ToolDefaults, ToolId } from "../types/tools";
 type Settings = {
   strokeColor: string;
   strokeWidth: number;
+  dashPattern: number[];
   defaultStrokeColor: string;
   textFont: string;
   textSize: number;
@@ -49,6 +50,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const defaultStrokeColor = ref("#5dd2ff");
   const strokeColor = ref(defaultStrokeColor.value);
   const strokeWidth = ref(12);
+  const dashPattern = ref<number[]>([]);
   const textFont = ref(textFontOptions[0]?.value ?? "inherit");
   const textSize = ref(20);
   const fillOpacity = ref(0.3);
@@ -213,6 +215,12 @@ export const useSettingsStore = defineStore("settings", () => {
     strokeWidth.value = width;
   }
 
+  function setDashPattern(pattern: number[]) {
+    dashPattern.value = pattern
+      .filter((value) => Number.isFinite(value) && value >= 0)
+      .map((value) => Math.round(value));
+  }
+
   function setTextFont(font: string) {
     textFont.value = font;
   }
@@ -279,6 +287,7 @@ export const useSettingsStore = defineStore("settings", () => {
     return {
       strokeColor: strokeColor.value,
       strokeWidth: strokeWidth.value,
+      dashPattern: dashPattern.value,
       defaultStrokeColor: defaultStrokeColor.value,
       textFont: textFont.value,
       textSize: textSize.value,
@@ -319,6 +328,11 @@ export const useSettingsStore = defineStore("settings", () => {
       strokeColor.value = settings.strokeColor;
     if (typeof settings.strokeWidth === "number")
       strokeWidth.value = settings.strokeWidth;
+    if (Array.isArray(settings.dashPattern)) {
+      dashPattern.value = settings.dashPattern
+        .filter((value) => Number.isFinite(value) && value >= 0)
+        .map((value) => Math.round(value));
+    }
     if (typeof settings.defaultStrokeColor === "string")
       defaultStrokeColor.value = settings.defaultStrokeColor;
     if (typeof settings.textFont === "string")
@@ -442,6 +456,7 @@ export const useSettingsStore = defineStore("settings", () => {
   function resetRefsToDefaults() {
     strokeColor.value = defaultStrokeColor.value;
     strokeWidth.value = 12;
+    dashPattern.value = [];
     textFont.value = textFontOptions[0]?.value ?? "inherit";
     textSize.value = 20;
     fillOpacity.value = 0.3;
@@ -514,6 +529,7 @@ export const useSettingsStore = defineStore("settings", () => {
     defaultStrokeColor,
     strokeColor,
     strokeWidth,
+    dashPattern,
     textFont,
     textSize,
     fillOpacity,
@@ -550,6 +566,7 @@ export const useSettingsStore = defineStore("settings", () => {
     setStrokeColor,
     setDefaultStrokeColor,
     setStrokeWidth,
+    setDashPattern,
     setTextFont,
     setTextSize,
     setFillOpacity,

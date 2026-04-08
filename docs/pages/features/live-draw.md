@@ -77,6 +77,24 @@ The overlay toolbar provides quick access to all tools and settings:
 - **Draggable**: Move it anywhere on screen
 - **Orientation**: Horizontal or vertical layout
 - **Position persistence**: Remembers its position between sessions
+- **More options (floating panel)**: Advanced actions are available in a floating panel above the dock.
+
+### More Options Actions
+
+- **Line style**: Cycle between solid, dashed, and dotted strokes.
+- **Lock / Unlock selection**: Prevent accidental movement or erasing.
+- **Group / Ungroup selection**: Toggle grouping for selected items.
+- **Smoothing**: Toggle stroke smoothing.
+- **Auto-erase**: Toggle automatic fade/removal.
+
+## Selection & Editing
+
+The Select tool supports editing actions shared with Whiteboard:
+
+- Multi-selection with `Ctrl / Cmd / Shift + click`
+- Copy / Paste / Duplicate selected items
+- Lock / Unlock selected items
+- Group / Ungroup selected items
 
 ## Compatibility
 

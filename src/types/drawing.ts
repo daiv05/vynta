@@ -32,9 +32,12 @@ export type GradientPalette = {
 export type DrawAction = {
   id: string;
   tool: ToolId;
+  locked?: boolean;
+  groupId?: string;
   color: string;
   width: number;
   opacity: number;
+  dashPattern?: number[];
   fillOpacity?: number;
   points: Point[];
   text?: string;

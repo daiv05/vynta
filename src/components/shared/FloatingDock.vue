@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import {
   ArrowUpRight,
+  CircleChevronRight,
   Circle,
   Eraser,
+  Group,
   GripVertical,
   Highlighter,
+  Ellipsis,
+  Lock,
   Minus,
   Move,
   PenTool,
   Redo2,
   Settings,
+  SquircleDashed,
   Square,
   Timer,
   Trash2,
@@ -20,7 +25,7 @@ import {
 } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
 import type { Component } from "vue";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useOverlayStore } from "../../stores/overlay";
 import { useSettingsStore } from "../../stores/settings";
@@ -40,6 +45,8 @@ const emit = defineEmits<{
   (event: "clear-canvas"): void;
   (event: "undo"): void;
   (event: "redo"): void;
+  (event: "toggle-lock"): void;
+  (event: "toggle-group-selection"): void;
   (event: "open-config"): void;
   (event: "close-dock"): void;
   (event: "drag-handle", payload: PointerEvent): void;
@@ -51,6 +58,8 @@ const toolsStore = useToolsStore();
 
 const {
   strokeColor,
+  strokeWidth,
+  dashPattern,
   smoothingEnabled,
   autoEraseEnabled,
   gradientEnabled,
@@ -83,6 +92,65 @@ const tools = computed<Array<{ id: ToolId; label: string; icon: IconEntry }>>(
 const visibleTools = computed(() => {
   if (!enabledTools.value) return tools.value;
   return tools.value.filter((tool) => enabledTools.value?.[tool.id]);
+});
+
+const moreOptionsOpen = ref(false);
+
+function normalizeDashPattern(pattern: number[]) {
+  return pattern
+    .filter((value) => Number.isFinite(value) && value >= 0)
+    .map((value) => Math.round(value));
+}
+
+const dashPresets = [
+  { key: "solid", pattern: [] as number[] },
+  { key: "dashed", pattern: [14, 10] as number[] },
+  { key: "dotted", pattern: [2, 10] as number[] },
+] as const;
+
+function patternForWidth(pattern: number[]) {
+  if (pattern.length === 0) return [];
+  const width = Math.max(1, Math.round(strokeWidth.value));
+  const on = pattern[0] ?? 0;
+  const off = pattern[1] ?? on;
+
+  if (on <= 3) {
+    return [Math.max(1, Math.round(width * 0.2)), Math.max(6, Math.round(width * 1.6))];
+  }
+
+  return [Math.max(on, Math.round(width * 1.2)), Math.max(off, Math.round(width * 0.9))];
+}
+
+const dashPresetOrder = ["solid", "dashed", "dotted"] as const;
+
+function inferDashPresetKey(pattern: number[]) {
+  if (pattern.length === 0) return "solid" as const;
+  const first = Math.max(0, pattern[0] ?? 0);
+  const width = Math.max(1, Math.round(strokeWidth.value));
+  const dottedThreshold = Math.max(3, Math.round(width * 0.45));
+  if (first <= dottedThreshold) return "dotted" as const;
+  return "dashed" as const;
+}
+
+const dashPresetKey = computed(() => inferDashPresetKey(normalizeDashPattern(dashPattern.value)));
+
+function nextDashPattern() {
+  const currentIndex = dashPresetOrder.findIndex((key) => key === dashPresetKey.value);
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % dashPresetOrder.length : 0;
+  const nextKey = dashPresetOrder[nextIndex];
+  const preset = dashPresets.find((entry) => entry.key === nextKey) ?? dashPresets[0];
+  settingsStore.setDashPattern(patternForWidth([...preset.pattern]));
+}
+
+const dashLabel = computed(() => {
+  const key = dashPresetKey.value;
+  return t(`home.dock.dashOptions.${key}`);
+});
+
+const lineStyleIcon = computed<IconEntry>(() => {
+  if (dashPresetKey.value === "dashed") return SquircleDashed;
+  if (dashPresetKey.value === "dotted") return Ellipsis;
+  return Minus;
 });
 
 function slotPreview(slot: QuickColorSlot) {
@@ -135,6 +203,15 @@ function slotActive(slot: QuickColorSlot) {
   }
   return false;
 }
+
+function handleToggleGroupSelection() {
+  emit("toggle-group-selection");
+}
+
+function toggleMoreOptions() {
+  moreOptionsOpen.value = !moreOptionsOpen.value;
+}
+
 </script>
 
 <template>
@@ -203,21 +280,64 @@ function slotActive(slot: QuickColorSlot) {
       <button
         type="button"
         class="dock-btn tooltip"
-        :class="{ active: smoothingEnabled }"
-        @click="settingsStore.setSmoothingEnabled(!smoothingEnabled)"
+        :class="{ active: moreOptionsOpen }"
+        @click="toggleMoreOptions"
       >
-        <Waves class="dock-icon" />
-        <span class="tooltip-text">{{ $t("hotkeys.tools.smoothing") }}</span>
+        <CircleChevronRight class="dock-icon" />
+        <span class="tooltip-text">{{ $t("home.dock.moreOptions") }}</span>
       </button>
-      <button
-        type="button"
-        class="dock-btn tooltip"
-        :class="{ active: autoEraseEnabled }"
-        @click="settingsStore.setAutoEraseEnabled(!autoEraseEnabled)"
+
+      <div
+        v-if="moreOptionsOpen"
+        class="more-options-overlay"
+        @pointerdown.stop
       >
-        <Timer class="dock-icon" />
-        <span class="tooltip-text">{{ $t("hotkeys.tools.autoErase") }}</span>
-      </button>
+        <button
+          type="button"
+          class="dock-btn tooltip"
+          :class="{ active: true }"
+          @click="nextDashPattern"
+        >
+          <component :is="lineStyleIcon" class="dock-icon" />
+          <span class="tooltip-text"
+            >{{ $t("home.dock.strokeDash") }}: {{ dashLabel }}</span
+          >
+        </button>
+        <button
+          type="button"
+          class="dock-btn tooltip"
+          @click="emit('toggle-lock')"
+        >
+          <Lock class="dock-icon" />
+          <span class="tooltip-text">{{ $t("home.dock.lockSelection") }}</span>
+        </button>
+        <button
+          type="button"
+          class="dock-btn tooltip"
+          @click="handleToggleGroupSelection"
+        >
+          <Group class="dock-icon" />
+          <span class="tooltip-text">{{ $t("home.dock.toggleGroupSelection") }}</span>
+        </button>
+        <button
+          type="button"
+          class="dock-btn tooltip"
+          :class="{ active: smoothingEnabled }"
+          @click="settingsStore.setSmoothingEnabled(!smoothingEnabled)"
+        >
+          <Waves class="dock-icon" />
+          <span class="tooltip-text">{{ $t("hotkeys.tools.smoothing") }}</span>
+        </button>
+        <button
+          type="button"
+          class="dock-btn tooltip"
+          :class="{ active: autoEraseEnabled }"
+          @click="settingsStore.setAutoEraseEnabled(!autoEraseEnabled)"
+        >
+          <Timer class="dock-icon" />
+          <span class="tooltip-text">{{ $t("hotkeys.tools.autoErase") }}</span>
+        </button>
+      </div>
     </div>
 
     <div v-if="props.showDockActions" class="dock-group dock-actions">
@@ -271,6 +391,7 @@ function slotActive(slot: QuickColorSlot) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .dock-vertical .dock-group {
@@ -351,6 +472,29 @@ function slotActive(slot: QuickColorSlot) {
   flex-direction: column;
   border-radius: 12px;
   padding: 8px 6px;
+}
+
+.more-options-overlay {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 10px);
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(10, 14, 20, 0.92);
+  border: 1px solid rgba(93, 210, 255, 0.24);
+  box-shadow: 0 16px 32px rgba(4, 6, 12, 0.45);
+  backdrop-filter: blur(14px);
+}
+
+.dock-vertical .more-options-overlay {
+  top: 0;
+  left: calc(100% + 10px);
+  right: auto;
+  flex-direction: column;
 }
 
 .color-dot {

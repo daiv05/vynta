@@ -41,6 +41,7 @@ export function useCanvasDrawing(options: {
   tool: Ref<ToolId>;
   color: Ref<string>;
   width: Ref<number>;
+  dashPattern: Ref<number[]>;
   smoothingEnabled: Ref<boolean>;
   gradientEnabled: Ref<boolean>;
   gradientType: Ref<"linear" | "radial">;
@@ -71,7 +72,9 @@ export function useCanvasDrawing(options: {
   const isDrawing = ref(false);
   const scale = ref(1);
   const hiddenActionIds = ref<Set<string>>(new Set());
-  const selectedActionId = ref<string | null>(null);
+  const selectedActionIds = ref<Set<string>>(new Set());
+  const primarySelectedActionId = ref<string | null>(null);
+  const clipboardActions = ref<DrawAction[]>([]);
   const dragState = ref<{
     active: boolean;
     lastPoint: Point | null;
@@ -205,16 +208,18 @@ export function useCanvasDrawing(options: {
       drawAction(ctx, activeAction.value);
     }
 
-    if (selectedActionId.value) {
-      const action = actions.value.find(
-        (entry) => entry.id === selectedActionId.value,
-      );
-      if (action) {
+    const selectedIds = selectedActionIds.value;
+    if (selectedIds.size > 0) {
+      actions.value.forEach((action) => {
+        if (!selectedIds.has(action.id)) return;
         const bounds = getActionBounds(action);
-        if (bounds) {
-          drawSelection(ctx, bounds);
-        }
-      }
+        if (!bounds) return;
+        drawSelection(ctx, bounds, {
+          locked: !!action.locked,
+          multi: selectedIds.size > 1,
+          primary: action.id === primarySelectedActionId.value,
+        });
+      });
     }
   }
 
@@ -238,6 +243,7 @@ export function useCanvasDrawing(options: {
       color: options.color.value,
       width: options.width.value,
       opacity: tool === "marker" ? markerOpacity : 1,
+      dashPattern: options.dashPattern.value.map((value) => Math.round(value)),
       fillOpacity: options.fillOpacity.value,
       points: [point],
       gradient,
@@ -339,7 +345,9 @@ export function useCanvasDrawing(options: {
     if (options.tool.value === "select") {
       const point = screenToWorld(event.clientX, event.clientY);
       canvas.setPointerCapture(event.pointerId);
-      startSelection(point);
+      startSelection(point, {
+        additive: event.ctrlKey || event.metaKey || event.shiftKey,
+      });
       return;
     }
     if (!drawableTools.has(options.tool.value)) return;
@@ -412,6 +420,7 @@ export function useCanvasDrawing(options: {
     stopFadeLoopIfIdle();
     activeAction.value = null;
     hiddenActionIds.value.clear();
+    clearSelection();
     redraw();
   }
 
@@ -421,6 +430,128 @@ export function useCanvasDrawing(options: {
     const ctx = canvas?.getContext("2d");
     if (!ctx) return null;
     return getDrawBounds(ctx, action);
+  }
+
+  function cloneAction(
+    action: DrawAction,
+    offset = { x: 24, y: 24 },
+    groupMap?: Map<string, string>,
+  ) {
+    const nextGroupId = action.groupId
+      ? (groupMap?.get(action.groupId) ?? action.groupId)
+      : undefined;
+
+    return {
+      ...action,
+      id: createId(),
+      locked: false,
+      groupId: nextGroupId,
+      points: translatePoints(action.points, offset.x, offset.y),
+      gradient: action.gradient
+        ? {
+          ...action.gradient,
+          stops: action.gradient.stops.map((stop) => ({ ...stop })),
+        }
+        : undefined,
+      dashPattern: action.dashPattern ? [...action.dashPattern] : [],
+    } satisfies DrawAction;
+  }
+
+  function getSelectedActions() {
+    const selected = selectedActionIds.value;
+    if (selected.size === 0) return [];
+    return actions.value.filter((entry) => selected.has(entry.id));
+  }
+
+  function setSelection(ids: string[], primary?: string | null) {
+    selectedActionIds.value = new Set(ids);
+    primarySelectedActionId.value =
+      primary ?? (ids.length > 0 ? ids[ids.length - 1] : null);
+  }
+
+  function clearSelection() {
+    selectedActionIds.value = new Set();
+    primarySelectedActionId.value = null;
+  }
+
+  function cloneSelection(source: DrawAction[], offset: { x: number; y: number }) {
+    const groupMap = new Map<string, string>();
+    source.forEach((action) => {
+      if (!action.groupId) return;
+      if (!groupMap.has(action.groupId)) {
+        groupMap.set(action.groupId, createId());
+      }
+    });
+    return source.map((action) => cloneAction(action, offset, groupMap));
+  }
+
+  function copySelectedAction() {
+    const selected = getSelectedActions();
+    if (selected.length === 0) return false;
+    clipboardActions.value = cloneSelection(selected, { x: 0, y: 0 });
+    return true;
+  }
+
+  function pasteCopiedAction() {
+    if (clipboardActions.value.length === 0) return false;
+    const next = cloneSelection(clipboardActions.value, { x: 28, y: 28 });
+    actions.value.push(...next);
+    historyStack.value.push({ type: "add", actions: next });
+    redoStack.value = [];
+    setSelection(next.map((entry) => entry.id), next[next.length - 1]?.id ?? null);
+    next.forEach((entry) => scheduleAutoErase(entry));
+    redraw();
+    return true;
+  }
+
+  function duplicateSelectedAction() {
+    const selected = getSelectedActions();
+    if (selected.length === 0) return false;
+    const next = cloneSelection(selected, { x: 28, y: 28 });
+    actions.value.push(...next);
+    historyStack.value.push({ type: "add", actions: next });
+    redoStack.value = [];
+    setSelection(next.map((entry) => entry.id), next[next.length - 1]?.id ?? null);
+    next.forEach((entry) => scheduleAutoErase(entry));
+    redraw();
+    return true;
+  }
+
+  function toggleSelectedLock() {
+    const selected = getSelectedActions();
+    if (selected.length === 0) return false;
+    const shouldLock = selected.some((entry) => !entry.locked);
+    selected.forEach((entry) => {
+      entry.locked = shouldLock;
+    });
+    redraw();
+    return true;
+  }
+
+  function groupSelectedActions() {
+    const selected = getSelectedActions().filter((entry) => !entry.locked);
+    if (selected.length < 2) return false;
+    const groupId = createId();
+    selected.forEach((entry) => {
+      entry.groupId = groupId;
+    });
+    redraw();
+    return true;
+  }
+
+  function ungroupSelectedActions() {
+    const selected = getSelectedActions();
+    if (selected.length === 0) return false;
+    let changed = false;
+    selected.forEach((entry) => {
+      if (entry.groupId) {
+        changed = true;
+        entry.groupId = undefined;
+      }
+    });
+    if (!changed) return false;
+    redraw();
+    return true;
   }
 
   function hitTestText(point: Point) {
@@ -513,6 +644,14 @@ export function useCanvasDrawing(options: {
         redoStack.value = [];
       }
       hiddenActionIds.value.delete(id);
+      if (selectedActionIds.value.has(id)) {
+        const next = new Set(selectedActionIds.value);
+        next.delete(id);
+        selectedActionIds.value = next;
+        if (primarySelectedActionId.value === id) {
+          primarySelectedActionId.value = next.values().next().value ?? null;
+        }
+      }
       redraw();
     }
   }
@@ -523,6 +662,7 @@ export function useCanvasDrawing(options: {
     const removals: Array<{ action: DrawAction; index: number }> = [];
 
     actions.value.forEach((action, index) => {
+      if (action.locked) return;
       if (hiddenActionIds.value.has(action.id)) return;
       const bounds = getActionBounds(action);
       if (!bounds) return;
@@ -577,10 +717,30 @@ export function useCanvasDrawing(options: {
     return null;
   }
 
-  function startSelection(point: Point) {
+  function startSelection(point: Point, selectionOptions?: { additive?: boolean }) {
     const hitId = hitTestAction(point);
-    selectedActionId.value = hitId;
+
     if (hitId) {
+      const isAdditive = selectionOptions?.additive ?? false;
+      if (isAdditive) {
+        const next = new Set(selectedActionIds.value);
+        if (next.has(hitId)) {
+          next.delete(hitId);
+        } else {
+          next.add(hitId);
+        }
+        selectedActionIds.value = next;
+        primarySelectedActionId.value = next.has(hitId)
+          ? hitId
+          : (next.values().next().value ?? null);
+      } else {
+        setSelection([hitId], hitId);
+      }
+    } else if (!(selectionOptions?.additive ?? false)) {
+      clearSelection();
+    }
+
+    if (hitId && selectedActionIds.value.has(hitId)) {
       dragState.value = { active: true, lastPoint: point };
     } else {
       dragState.value = { active: false, lastPoint: null };
@@ -589,16 +749,33 @@ export function useCanvasDrawing(options: {
   }
 
   function updateSelection(point: Point) {
-    if (!dragState.value.active || !selectedActionId.value) return;
-    const action = actions.value.find(
-      (entry) => entry.id === selectedActionId.value,
+    if (!dragState.value.active) return;
+    const selected = getSelectedActions();
+    if (selected.length === 0) return;
+
+    const moveIds = new Set<string>();
+    selected.forEach((entry) => {
+      moveIds.add(entry.id);
+      if (!entry.groupId) return;
+      actions.value.forEach((candidate) => {
+        if (candidate.groupId === entry.groupId) {
+          moveIds.add(candidate.id);
+        }
+      });
+    });
+
+    const movable = actions.value.filter(
+      (entry) => moveIds.has(entry.id) && !entry.locked,
     );
-    if (!action) return;
+    if (movable.length === 0) return;
+
     const lastPoint = dragState.value.lastPoint;
     if (!lastPoint) return;
     const deltaX = point.x - lastPoint.x;
     const deltaY = point.y - lastPoint.y;
-    action.points = translatePoints(action.points, deltaX, deltaY);
+    movable.forEach((entry) => {
+      entry.points = translatePoints(entry.points, deltaX, deltaY);
+    });
     dragState.value.lastPoint = point;
     redraw();
   }
@@ -733,7 +910,7 @@ export function useCanvasDrawing(options: {
 
   watch(options.tool, (tool) => {
     if (tool !== "select") {
-      selectedActionId.value = null;
+      clearSelection();
       dragState.value = { active: false, lastPoint: null };
     }
   });
@@ -758,6 +935,12 @@ export function useCanvasDrawing(options: {
     updateTextAction,
     removeAction,
     setActionHidden,
+    copySelectedAction,
+    pasteCopiedAction,
+    duplicateSelectedAction,
+    toggleSelectedLock,
+    groupSelectedActions,
+    ungroupSelectedActions,
     undo,
     redo,
     redraw,

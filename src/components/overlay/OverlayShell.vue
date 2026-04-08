@@ -30,6 +30,7 @@ const toolsStore = useToolsStore();
 const {
   strokeColor,
   strokeWidth,
+  dashPattern,
   defaultStrokeColor,
   textFont,
   textSize,
@@ -115,6 +116,7 @@ function applyPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
+  settingsStore.setDashPattern([...payload.dashPattern]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
   settingsStore.setSmoothingEnabled(payload.smoothingEnabled);
@@ -161,6 +163,7 @@ const overlayPayload = computed<OverlayPayload>(() => ({
   enabledTools: { ...enabledTools.value } as Record<ToolId, boolean>,
   strokeColor: strokeColor.value,
   strokeWidth: strokeWidth.value,
+  dashPattern: [...dashPattern.value],
   textFont: textFont.value,
   textSize: textSize.value,
   smoothingEnabled: smoothingEnabled.value,
@@ -230,6 +233,16 @@ function handleRedo() {
 function handleClear() {
   clearCanvas();
   emit("overlay-clear");
+}
+
+function handleToggleLockSelection() {
+  canvasStageRef.value?.toggleSelectionLock?.();
+}
+
+function handleToggleGroupSelection() {
+  const grouped = canvasStageRef.value?.groupSelection?.();
+  if (grouped) return;
+  canvasStageRef.value?.ungroupSelection?.();
 }
 
 function handleHideDock() {
@@ -461,6 +474,7 @@ onBeforeUnmount(() => {
       :selected-tool="selectedTool"
       :stroke-color="strokeColor"
       :stroke-width="strokeWidth"
+      :dash-pattern="dashPattern"
       :text-font="textFont"
       :text-size="textSize"
       :smoothing-enabled="smoothingEnabled"
@@ -529,6 +543,8 @@ onBeforeUnmount(() => {
         @clear-canvas="handleClear"
         @undo="handleUndo"
         @redo="handleRedo"
+        @toggle-lock="handleToggleLockSelection"
+        @toggle-group-selection="handleToggleGroupSelection"
         @drag-handle="startDockDrag"
         @open-config="handleOpenConfig"
         @close-dock="handleHideDock"

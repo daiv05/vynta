@@ -173,6 +173,10 @@ function drawArrow(ctx: CanvasRenderingContext2D, action: DrawAction) {
 }
 
 function applyStyle(ctx: CanvasRenderingContext2D, action: DrawAction) {
+  const dashPattern = (action.dashPattern ?? [])
+    .filter((value) => Number.isFinite(value) && value >= 0)
+    .map((value) => Math.round(value));
+
   ctx.globalCompositeOperation = action.composite ?? "source-over";
   ctx.strokeStyle = action.color;
   ctx.lineWidth = action.width;
@@ -180,6 +184,7 @@ function applyStyle(ctx: CanvasRenderingContext2D, action: DrawAction) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.fillStyle = action.color;
+  ctx.setLineDash(dashPattern);
 }
 
 function createGradient(
@@ -461,11 +466,24 @@ export function getDrawBounds(
   return getPointsBounds(action.points);
 }
 
-export function drawSelection(ctx: CanvasRenderingContext2D, bounds: Bounds) {
+export function drawSelection(
+  ctx: CanvasRenderingContext2D,
+  bounds: Bounds,
+  options?: { locked?: boolean; multi?: boolean; primary?: boolean },
+) {
+  const locked = options?.locked ?? false;
+  const multi = options?.multi ?? false;
+  const primary = options?.primary ?? false;
   ctx.save();
-  ctx.strokeStyle = "rgba(127, 217, 255, 0.9)";
+  if (locked) {
+    ctx.strokeStyle = "rgba(255, 122, 122, 0.95)";
+  } else if (primary) {
+    ctx.strokeStyle = "rgba(127, 217, 255, 0.95)";
+  } else {
+    ctx.strokeStyle = "rgba(127, 217, 255, 0.7)";
+  }
   ctx.lineWidth = 1;
-  ctx.setLineDash([6, 4]);
+  ctx.setLineDash(locked ? [4, 4] : [6, 4]);
   ctx.strokeRect(
     bounds.x - 4,
     bounds.y - 4,
@@ -485,7 +503,13 @@ export function drawSelection(ctx: CanvasRenderingContext2D, bounds: Bounds) {
     { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height },
     { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
   ];
-  ctx.fillStyle = "#7fd9ff";
+  if (locked) {
+    ctx.fillStyle = "#ff7a7a";
+  } else if (multi) {
+    ctx.fillStyle = "#9ce7ff";
+  } else {
+    ctx.fillStyle = "#7fd9ff";
+  }
   handlePoints.forEach((point) => {
     ctx.fillRect(
       point.x - handleSize / 2,

@@ -9,6 +9,7 @@ export type OverlayPayload = {
   enabledTools: Record<ToolId, boolean>;
   strokeColor: string;
   strokeWidth: number;
+  dashPattern: number[];
   textFont: string;
   textSize: number;
   smoothingEnabled: boolean;

@@ -40,6 +40,25 @@ Save your whiteboard content as a **PNG image** file. This captures the current 
 
 The whiteboard has its own floating toolbar, independent of the overlay toolbar. Its position is saved separately and persists between sessions.
 
+### More Options (Floating)
+
+Whiteboard includes a floating **More options** panel above the dock with shared editing actions:
+
+- **Line style**: solid, dashed, dotted
+- **Lock / Unlock selection**
+- **Group / Ungroup selection**
+- **Smoothing toggle**
+- **Auto-erase toggle**
+
+## Selection & Editing Actions
+
+Whiteboard supports the same selection workflow as Live Draw:
+
+- Multi-selection with `Ctrl / Cmd / Shift + click`
+- Copy (`Ctrl + C`), Paste (`Ctrl + V`), Duplicate (`Ctrl + D`)
+- Lock / Unlock (`Ctrl + L`)
+- Group (`Ctrl + G`) and Ungroup (`Ctrl + Shift + G`)
+
 ## Use Cases
 
 - **Brainstorming**: Sketch ideas during meetings without switching to another app

@@ -14,6 +14,7 @@ The **"Restore preferences"** option restores the layout and settings to their d
 |---|---|---|
 | **Stroke color** | Color | Default drawing color |
 | **Stroke width** | Number | Default stroke thickness |
+| **Line style** | Cycle | Stroke pattern: solid, dashed, dotted |
 | **Text font** | Select | Font family for the text tool (Inter, Arial, Courier New, etc.) |
 | **Text size** | Number | Default font size for text tool |
 | **Fill opacity** | Number (0–1) | Fill transparency for shapes |
@@ -34,6 +35,16 @@ The **"Restore preferences"** option restores the layout and settings to their d
 |---|---|---|
 | **Auto-erase enabled** | Toggle | Annotations fade out after a delay |
 | **Auto-erase delay** | Number (seconds) | How long before strokes start fading |
+
+### Dock More Options (Live Draw / Whiteboard)
+
+Advanced editing actions are grouped in a floating **More options** panel above the dock:
+
+- Line style cycling
+- Lock / Unlock selection
+- Group / Ungroup selection
+- Smoothing toggle
+- Auto-erase toggle
 
 ### Quick Color Slots
 
