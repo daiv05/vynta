@@ -10,6 +10,7 @@ export function useSpotlightWindow() {
     isUpdating.value = true;
     try {
       await invoke("set_spotlight_visible", { visible });
+      spotlightVisible.value = visible;
     } finally {
       isUpdating.value = false;
     }

@@ -10,6 +10,7 @@ export function useCursorHighlightWindow() {
     isUpdating.value = true;
     try {
       await invoke("set_cursor_highlight_visible", { visible });
+      cursorHighlightVisible.value = visible;
     } finally {
       isUpdating.value = false;
     }

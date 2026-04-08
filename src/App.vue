@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import { computed, onMounted } from "vue";
 import AppShell from "./components/app/AppShell.vue";
 import CursorHighlightShell from "./components/overlay/CursorHighlightShell.vue";
@@ -7,11 +8,23 @@ import SpotlightShell from "./components/overlay/SpotlightShell.vue";
 import ZoomShell from "./components/overlay/ZoomShell.vue";
 import ToastManager from "./components/ui/ToastManager.vue";
 import WhiteboardShell from "./components/whiteboard/WhiteboardShell.vue";
-import { storeToRefs } from "pinia";
 import { useSettingsStore } from "./stores/settings";
 
 const settingsStore = useSettingsStore();
-const { zoomMotor } = storeToRefs(settingsStore);
+const { ready: settingsReady, zoomMotor } = storeToRefs(settingsStore);
+
+onMounted(async () => {
+  await settingsStore.hydrate();
+  if (
+    isOverlay.value ||
+    isCursorHighlight.value ||
+    isSpotlight.value ||
+    isZoom.value
+  ) {
+    globalThis.document.body.classList.add("overlay-mode");
+  }
+});
+
 const isOverlay = computed(() => {
   if (globalThis.window === undefined) return false;
   const params = new URLSearchParams(globalThis.window.location.search);
@@ -41,24 +54,13 @@ const isZoom = computed(() => {
   const params = new URLSearchParams(globalThis.window.location.search);
   return params.get("zoom") === "true";
 });
-
-onMounted(() => {
-  if (
-    isOverlay.value ||
-    isCursorHighlight.value ||
-    isSpotlight.value ||
-    isZoom.value
-  ) {
-    globalThis.document.body.classList.add("overlay-mode");
-  }
-});
 </script>
 
 <template>
   <OverlayShell v-if="isOverlay" />
   <CursorHighlightShell v-else-if="isCursorHighlight" />
   <SpotlightShell v-else-if="isSpotlight" />
-  <ZoomShell v-else-if="isZoom && zoomMotor === 'dxgi'" />
+  <ZoomShell v-else-if="isZoom && settingsReady && zoomMotor === 'dxgi'" />
   <WhiteboardShell v-else-if="isWhiteboard" />
   <AppShell v-else />
   <ToastManager />

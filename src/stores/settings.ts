@@ -104,7 +104,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const previewEnabled = ref(true);
 
   // Docks
-  const overlayDockPosition = ref({ x: 0, y: 0 });
+  const overlayDockPosition = ref({ x: 24, y: 24 });
   const overlayDockScreenSize = ref({ width: 0, height: 0 });
   const whiteboardDockPosition = ref({ x: 0, y: 0 });
 
@@ -479,7 +479,7 @@ export const useSettingsStore = defineStore("settings", () => {
     startWithWindows.value = false;
     restorePreferencesOnLaunch.value = true;
     previewEnabled.value = true;
-    overlayDockPosition.value = { x: 0, y: 0 };
+    overlayDockPosition.value = { x: 24, y: 24 };
     overlayDockScreenSize.value = { width: 0, height: 0 };
     whiteboardDockPosition.value = { x: 0, y: 0 };
     whiteboardGridEnabled.value = true;
