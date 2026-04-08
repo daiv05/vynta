@@ -29,6 +29,7 @@ const { quickColorSlots } = storeToRefs(toolsStore);
 const {
   strokeColor,
   strokeWidth,
+  dashPattern,
   textFont,
   textSize,
   smoothingEnabled,
@@ -233,6 +234,7 @@ const overlayPayload = computed<OverlayPayload>(() => ({
   enabledTools: { ...enabledTools.value },
   strokeColor: strokeColor.value,
   strokeWidth: strokeWidth.value,
+  dashPattern: [...dashPattern.value],
   textFont: textFont.value,
   textSize: textSize.value,
   smoothingEnabled: smoothingEnabled.value,
@@ -312,6 +314,7 @@ function applyOverlayPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
+  settingsStore.setDashPattern([...payload.dashPattern]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
   settingsStore.setSmoothingEnabled(payload.smoothingEnabled);
