@@ -30,6 +30,7 @@ import type { QuickColorSlot } from "../../types/ui";
 const props = defineProps<{
   layout?: "horizontal" | "vertical";
   showDockActions?: boolean;
+  showCloseButton?: boolean;
   showDragHandle?: boolean;
 }>();
 
@@ -220,6 +221,7 @@ function slotActive(slot: QuickColorSlot) {
         <span class="tooltip-text">{{ $t("tray.config") }}</span>
       </button>
       <button
+        v-if="props.showCloseButton ?? true"
         type="button"
         class="dock-btn tooltip"
         @click="emit('close-dock')"

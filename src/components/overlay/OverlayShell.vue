@@ -486,6 +486,7 @@ onBeforeUnmount(() => {
         :zoom-enabled="zoomEnabled"
         :enabled-tools="enabledTools"
         :show-dock-actions="true"
+        :show-close-button="false"
         @select-tool="overlayStore.setTool"
         @update-color="settingsStore.setStrokeColor"
         @update-width="settingsStore.setStrokeWidth"

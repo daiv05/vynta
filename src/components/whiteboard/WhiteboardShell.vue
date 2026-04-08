@@ -348,6 +348,7 @@ onBeforeUnmount(() => {
         :layout="overlayDockOrientation"
         :show-drag-handle="true"
         :show-dock-actions="true"
+        :show-close-button="false"
         @drag-handle="startDockDrag"
         @undo="handleUndo"
         @redo="handleRedo"
