@@ -45,8 +45,8 @@ The whiteboard has its own floating toolbar, independent of the overlay toolbar.
 Whiteboard includes a floating **More options** panel above the dock with shared editing actions:
 
 - **Line style**: solid, dashed, dotted
-- **Lock / Unlock selection**
-- **Group / Ungroup selection**
+- **Lock / Unlock selection** (applies to whole selected groups)
+- **Group / Ungroup selection** (groups behave as single units and can be merged)
 - **Smoothing toggle**
 - **Auto-erase toggle**
 
@@ -56,8 +56,10 @@ Whiteboard supports the same selection workflow as Live Draw:
 
 - Multi-selection with `Ctrl / Cmd / Shift + click`
 - Copy (`Ctrl + C`), Paste (`Ctrl + V`), Duplicate (`Ctrl + D`)
-- Lock / Unlock (`Ctrl + L`)
+- Lock / Unlock (`Ctrl + L`) for the selected unit (item or full group)
 - Group (`Ctrl + G`) and Ungroup (`Ctrl + Shift + G`)
+- Clicking a grouped item selects the full group
+- Grouping selected items from different groups merges them into one group
 
 ## Use Cases
 

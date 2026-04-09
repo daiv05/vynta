@@ -41,10 +41,19 @@ The **"Restore preferences"** option restores the layout and settings to their d
 Advanced editing actions are grouped in a floating **More options** panel above the dock:
 
 - Line style cycling
-- Lock / Unlock selection
-- Group / Ungroup selection
+- Lock / Unlock selection (including full selected groups)
+- Group / Ungroup selection (groups act as single units and support group merge)
 - Smoothing toggle
 - Auto-erase toggle
+
+Related selection hotkeys:
+
+- `Ctrl + C` Copy
+- `Ctrl + V` Paste
+- `Ctrl + D` Duplicate
+- `Ctrl + L` Lock / Unlock selection
+- `Ctrl + G` Group
+- `Ctrl + Shift + G` Ungroup
 
 ### Quick Color Slots
 

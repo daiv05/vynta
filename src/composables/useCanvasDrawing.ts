@@ -208,16 +208,42 @@ export function useCanvasDrawing(options: {
       drawAction(ctx, activeAction.value);
     }
 
-    const selectedIds = selectedActionIds.value;
+    const selectedIds = expandSelectionWithGroups(selectedActionIds.value);
     if (selectedIds.size > 0) {
+      const groupedDrawn = new Set<string>();
+      const selectedUnits = getSelectionUnits(selectedIds);
+      const selectedUnitsCount = selectedUnits.size;
+      const primaryId = primarySelectedActionId.value;
+
       actions.value.forEach((action) => {
         if (!selectedIds.has(action.id)) return;
+
+        if (action.groupId) {
+          if (groupedDrawn.has(action.groupId)) return;
+          groupedDrawn.add(action.groupId);
+
+          const members = actions.value.filter(
+            (entry) => entry.groupId === action.groupId,
+          );
+          const bounds = getActionsBounds(members);
+          if (!bounds) return;
+
+          drawSelection(ctx, bounds, {
+            locked: members.some((entry) => !!entry.locked),
+            multi: selectedUnitsCount > 1,
+            primary:
+              primaryId != null &&
+              members.some((entry) => entry.id === primaryId),
+          });
+          return;
+        }
+
         const bounds = getActionBounds(action);
         if (!bounds) return;
         drawSelection(ctx, bounds, {
           locked: !!action.locked,
-          multi: selectedIds.size > 1,
-          primary: action.id === primarySelectedActionId.value,
+          multi: selectedUnitsCount > 1,
+          primary: action.id === primaryId,
         });
       });
     }
@@ -458,15 +484,86 @@ export function useCanvasDrawing(options: {
   }
 
   function getSelectedActions() {
-    const selected = selectedActionIds.value;
+    const selected = expandSelectionWithGroups(selectedActionIds.value);
     if (selected.size === 0) return [];
     return actions.value.filter((entry) => selected.has(entry.id));
   }
 
+  function getGroupMembers(groupId: string) {
+    return actions.value.filter((entry) => entry.groupId === groupId);
+  }
+
+  function getSelectionUnits(ids: Set<string>) {
+    const units = new Set<string>();
+    actions.value.forEach((entry) => {
+      if (!ids.has(entry.id)) return;
+      units.add(entry.groupId ? `group:${entry.groupId}` : `id:${entry.id}`);
+    });
+    return units;
+  }
+
+  function expandSelectionWithGroups(ids: Iterable<string>) {
+    const expanded = new Set(ids);
+    const queue = [...expanded];
+
+    while (queue.length > 0) {
+      const currentId = queue.pop();
+      if (!currentId) continue;
+      const action = actions.value.find((entry) => entry.id === currentId);
+      if (!action?.groupId) continue;
+
+      getGroupMembers(action.groupId).forEach((member) => {
+        if (expanded.has(member.id)) return;
+        expanded.add(member.id);
+        queue.push(member.id);
+      });
+    }
+
+    return expanded;
+  }
+
+  function getActionsBounds(entries: DrawAction[]) {
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    entries.forEach((entry) => {
+      const bounds = getActionBounds(entry);
+      if (!bounds) return;
+      minX = Math.min(minX, bounds.x);
+      minY = Math.min(minY, bounds.y);
+      maxX = Math.max(maxX, bounds.x + bounds.width);
+      maxY = Math.max(maxY, bounds.y + bounds.height);
+    });
+
+    if (
+      !Number.isFinite(minX) ||
+      !Number.isFinite(minY) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(maxY)
+    ) {
+      return null;
+    }
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  }
+
   function setSelection(ids: string[], primary?: string | null) {
-    selectedActionIds.value = new Set(ids);
-    primarySelectedActionId.value =
-      primary ?? (ids.length > 0 ? ids[ids.length - 1] : null);
+    const expanded = expandSelectionWithGroups(ids);
+    selectedActionIds.value = expanded;
+    if (primary && expanded.has(primary)) {
+      primarySelectedActionId.value = primary;
+      return;
+    }
+
+    const lastId = [...expanded].at(-1) ?? null;
+    primarySelectedActionId.value = lastId;
   }
 
   function clearSelection() {
@@ -531,7 +628,14 @@ export function useCanvasDrawing(options: {
   function groupSelectedActions() {
     const selected = getSelectedActions().filter((entry) => !entry.locked);
     if (selected.length < 2) return false;
-    const groupId = createId();
+
+    const selectedGroupIds = new Set(
+      selected
+        .map((entry) => entry.groupId)
+        .filter((groupId): groupId is string => !!groupId),
+    );
+
+    const groupId = selectedGroupIds.values().next().value ?? createId();
     selected.forEach((entry) => {
       entry.groupId = groupId;
     });
@@ -722,19 +826,29 @@ export function useCanvasDrawing(options: {
 
     if (hitId) {
       const isAdditive = selectionOptions?.additive ?? false;
+      const hitAction = actions.value.find((entry) => entry.id === hitId);
+      const targetIds = hitAction?.groupId
+        ? getGroupMembers(hitAction.groupId).map((entry) => entry.id)
+        : [hitId];
+
       if (isAdditive) {
         const next = new Set(selectedActionIds.value);
-        if (next.has(hitId)) {
-          next.delete(hitId);
+        const hasAllTarget = targetIds.every((id) => next.has(id));
+        if (hasAllTarget) {
+          targetIds.forEach((id) => next.delete(id));
         } else {
-          next.add(hitId);
+          targetIds.forEach((id) => next.add(id));
         }
-        selectedActionIds.value = next;
-        primarySelectedActionId.value = next.has(hitId)
-          ? hitId
-          : (next.values().next().value ?? null);
+
+        const expanded = expandSelectionWithGroups(next);
+        selectedActionIds.value = expanded;
+        if (expanded.has(hitId)) {
+          primarySelectedActionId.value = hitId;
+        } else {
+          primarySelectedActionId.value = [...expanded].at(-1) ?? null;
+        }
       } else {
-        setSelection([hitId], hitId);
+        setSelection(targetIds, hitId);
       }
     } else if (!(selectionOptions?.additive ?? false)) {
       clearSelection();

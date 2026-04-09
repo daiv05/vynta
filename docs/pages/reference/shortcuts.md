@@ -55,7 +55,10 @@ These shortcuts are active when the **Select** tool is used in Live Draw or Whit
 ### Selection Behavior
 
 - Use **Ctrl / Cmd / Shift + click** with the Select tool to add/remove items from the current selection.
+- Clicking a grouped item selects the **entire group** as a single unit.
 - Moving a grouped item moves the entire group.
+- **Lock / Unlock** applies to the selected unit, including all members of a selected group.
+- Grouping an item that already belongs to a group with external items will merge them into one group.
 - Locked items cannot be moved or erased until unlocked.
 
 ## Customizing Shortcuts
