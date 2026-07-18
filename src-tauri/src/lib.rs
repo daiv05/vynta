@@ -15,6 +15,9 @@ struct ZoomConfig {
     backend: String,
 }
 
+/// In-memory zoom backend state. Seeded once from the compiled-in
+/// `config/zoom.json` factory default, then overwritten on every app start
+/// by `hydrate()` (frontend) via `set_zoom_backend_cmd`
 static ZOOM_BACKEND_STATE: OnceLock<RwLock<String>> = OnceLock::new();
 
 const DEFAULT_ZOOM_BACKEND: &str = "dxgi";
