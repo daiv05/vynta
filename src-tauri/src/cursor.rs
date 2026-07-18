@@ -49,9 +49,9 @@ pub fn start_mouse_hook() {
         );
 
         let hook = SetWindowsHookExW(WH_MOUSE_LL, Some(mouse_hook_proc), None, 0);
-        let mut msg = std::mem::zeroed();
-        while GetMessageW(&mut msg, None, 0, 0).into() {}
         if let Ok(hook) = hook {
+            let mut msg = std::mem::zeroed();
+            while GetMessageW(&mut msg, None, 0, 0).into() {}
             if !hook.0.is_null() {
                 let _ = UnhookWindowsHookEx(hook);
             }
