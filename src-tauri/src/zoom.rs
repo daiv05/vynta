@@ -110,13 +110,34 @@ fn capture_zoom_region_raw_sync(
 }
 
 #[cfg(target_os = "windows")]
+struct GdiDcGuard {
+    hdc_screen: windows::Win32::Graphics::Gdi::HDC,
+    hdc_mem: windows::Win32::Graphics::Gdi::HDC,
+    hbm: windows::Win32::Graphics::Gdi::HBITMAP,
+    hbm_old: windows::Win32::Graphics::Gdi::HGDIOBJ,
+}
+
+#[cfg(target_os = "windows")]
+impl Drop for GdiDcGuard {
+    fn drop(&mut self) {
+        use windows::Win32::Graphics::Gdi::{DeleteDC, DeleteObject, ReleaseDC, SelectObject};
+        unsafe {
+            SelectObject(self.hdc_mem, self.hbm_old);
+            let _ = DeleteObject(self.hbm.into());
+            let _ = DeleteDC(self.hdc_mem);
+            let _ = ReleaseDC(None, self.hdc_screen);
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
 fn capture_gdi_screenshot(cursor_x: i32, cursor_y: i32) -> Result<(Vec<u8>, u32, u32), String> {
     use std::mem;
     use windows::Win32::Foundation::POINT;
     use windows::Win32::Graphics::Gdi::{
-        BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC,
-        GetDIBits, GetMonitorInfoW, MonitorFromPoint, SelectObject, BITMAPINFO, BITMAPINFOHEADER,
-        BI_RGB, DIB_RGB_COLORS, MONITORINFO, MONITOR_DEFAULTTONEAREST, SRCCOPY,
+        BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, GetDC, GetDIBits, GetMonitorInfoW,
+        MonitorFromPoint, SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
+        MONITORINFO, MONITOR_DEFAULTTONEAREST, SRCCOPY,
     };
 
     unsafe {
@@ -138,8 +159,14 @@ fn capture_gdi_screenshot(cursor_x: i32, cursor_y: i32) -> Result<(Vec<u8>, u32,
         let hdc_screen = GetDC(None);
         let hdc_mem = CreateCompatibleDC(Some(hdc_screen));
         let hbm = CreateCompatibleBitmap(hdc_screen, width as i32, height as i32);
-
         let hbm_old = SelectObject(hdc_mem, hbm.into());
+
+        let _dc_guard = GdiDcGuard {
+            hdc_screen,
+            hdc_mem,
+            hbm,
+            hbm_old,
+        };
 
         BitBlt(
             hdc_mem,
@@ -153,8 +180,6 @@ fn capture_gdi_screenshot(cursor_x: i32, cursor_y: i32) -> Result<(Vec<u8>, u32,
             SRCCOPY,
         )
         .map_err(|e| format!("BitBlt failed: {e}"))?;
-
-        SelectObject(hdc_mem, hbm_old);
 
         let mut bmi: BITMAPINFO = mem::zeroed();
         bmi.bmiHeader.biSize = mem::size_of::<BITMAPINFOHEADER>() as u32;
@@ -175,10 +200,6 @@ fn capture_gdi_screenshot(cursor_x: i32, cursor_y: i32) -> Result<(Vec<u8>, u32,
             &mut bmi,
             DIB_RGB_COLORS,
         );
-
-        let _ = DeleteObject(hbm.into());
-        let _ = DeleteDC(hdc_mem);
-        let _ = windows::Win32::Graphics::Gdi::ReleaseDC(None, hdc_screen);
 
         if res == 0 {
             return Err("GetDIBits failed".to_string());
