@@ -17,28 +17,33 @@ struct ZoomConfig {
 
 static ZOOM_BACKEND_STATE: OnceLock<RwLock<String>> = OnceLock::new();
 
+const DEFAULT_ZOOM_BACKEND: &str = "dxgi";
+
+fn init_zoom_backend_state() -> RwLock<String> {
+    let json_str = include_str!("../../config/zoom.json");
+    let backend = serde_json::from_str::<ZoomConfig>(json_str)
+        .map(|config| config.backend)
+        .unwrap_or_else(|e| {
+            eprintln!("Failed to parse zoom.json, falling back to default backend: {}", e);
+            DEFAULT_ZOOM_BACKEND.to_string()
+        });
+    RwLock::new(backend)
+}
+
 pub fn get_zoom_backend() -> String {
-    let state = ZOOM_BACKEND_STATE.get_or_init(|| {
-        let json_str = include_str!("../../config/zoom.json");
-        let config: ZoomConfig = serde_json::from_str(json_str).expect("Failed to parse zoom.json");
-        RwLock::new(config.backend)
-    });
+    let state = ZOOM_BACKEND_STATE.get_or_init(init_zoom_backend_state);
 
     match state.read() {
         Ok(guard) => guard.clone(),
         Err(e) => {
             eprintln!("Failed to read zoom backend state: {}", e);
-            "dxgi".to_string()
+            DEFAULT_ZOOM_BACKEND.to_string()
         }
     }
 }
 
 pub fn set_zoom_backend_internal(new_backend: String) {
-    let state = ZOOM_BACKEND_STATE.get_or_init(|| {
-        let json_str = include_str!("../../config/zoom.json");
-        let config: ZoomConfig = serde_json::from_str(json_str).expect("Failed to parse zoom.json");
-        RwLock::new(config.backend)
-    });
+    let state = ZOOM_BACKEND_STATE.get_or_init(init_zoom_backend_state);
 
     if let Ok(mut guard) = state.write() {
         *guard = new_backend;
