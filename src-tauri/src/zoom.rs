@@ -351,11 +351,25 @@ pub fn set_zoom_stream_config(size: u32, zoom_level: f32) -> Result<(), String> 
 }
 
 #[tauri::command]
-pub fn stop_zoom_stream() -> Result<(), String> {
+pub async fn stop_zoom_stream() -> Result<(), String> {
     let handle_store = zoom_stream_handle();
     if let Some(existing) = handle_store.swap(None) {
         existing.stop.store(true, Ordering::Relaxed);
-        existing.task.abort();
+        let ZoomStreamHandle { mut task, .. } = match Arc::try_unwrap(existing) {
+            Ok(handle) => handle,
+            Err(shared) => {
+                shared.task.abort();
+                return Ok(());
+            }
+        };
+        if tokio::time::timeout(Duration::from_secs(3), &mut task)
+            .await
+            .is_err()
+        {
+            // Loop task did not wind down in time (e.g. stuck DXGI capture
+            // holding CACHED_DUPLICATOR); abort as a last resort.
+            task.abort();
+        }
     }
     Ok(())
 }
