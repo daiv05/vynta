@@ -83,8 +83,8 @@ export function useMonitorContext() {
       return { x: globalX, y: globalY };
     }
 
-    const { virtualX, virtualY } = monitorContext.value;
-    const scale = window.devicePixelRatio || 1.0;
+    const { virtualX, virtualY, scaleFactor } = monitorContext.value;
+    const scale = scaleFactor || 1.0;
 
     return {
       x: (globalX - virtualX) / scale,
@@ -97,8 +97,8 @@ export function useMonitorContext() {
       return { x: localX, y: localY };
     }
 
-    const { virtualX, virtualY } = monitorContext.value;
-    const scale = window.devicePixelRatio || 1.0;
+    const { virtualX, virtualY, scaleFactor } = monitorContext.value;
+    const scale = scaleFactor || 1.0;
 
     return {
       x: localX * scale + virtualX,
