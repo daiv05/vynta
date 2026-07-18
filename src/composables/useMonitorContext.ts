@@ -16,6 +16,7 @@ export function useMonitorContext() {
   const isReady = ref(false);
 
   let unlisten: (() => void) | null = null;
+  let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   onMounted(async () => {
     unlisten = await listen<MonitorContext>("monitor-context", (event) => {
@@ -34,7 +35,8 @@ export function useMonitorContext() {
         monitorContext.value = payload;
         isReady.value = true;
       } catch {
-        setTimeout(() => {
+        fallbackTimer = setTimeout(() => {
+          fallbackTimer = null;
           if (!monitorContext.value) {
             console.warn(
               "Monitor context not received from backend, using defaults",
@@ -75,6 +77,10 @@ export function useMonitorContext() {
   onUnmounted(() => {
     if (unlisten) {
       unlisten();
+    }
+    if (fallbackTimer !== null) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
     }
   });
 
