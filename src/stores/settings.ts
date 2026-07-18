@@ -274,6 +274,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const isHydrating = ref(false);
   let storeRef: Awaited<ReturnType<typeof load>> | null = null;
   let persistTimer: number | null = null;
+  let persistChain: Promise<void> = Promise.resolve();
 
   function snapshotSettings(): Settings {
     return {
@@ -385,6 +386,13 @@ export const useSettingsStore = defineStore("settings", () => {
     await store.save();
   }
 
+  function queuePersist() {
+    persistChain = persistChain.then(persist).catch((err) => {
+      console.error("Failed to persist settings:", err);
+    });
+    return persistChain;
+  }
+
   function schedulePersist() {
     if (isHydrating.value) return;
     if (persistTimer) {
@@ -392,7 +400,7 @@ export const useSettingsStore = defineStore("settings", () => {
     }
     persistTimer = window.setTimeout(() => {
       persistTimer = null;
-      persist();
+      queuePersist();
     }, 500);
   }
 

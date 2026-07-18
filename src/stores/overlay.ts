@@ -54,6 +54,7 @@ export const useOverlayStore = defineStore("overlay", () => {
   const isHydrating = ref(false);
   let storeRef: Awaited<ReturnType<typeof load>> | null = null;
   let persistTimer: number | null = null;
+  let persistChain: Promise<void> = Promise.resolve();
 
   function snapshotOverlay() {
     return {
@@ -78,6 +79,13 @@ export const useOverlayStore = defineStore("overlay", () => {
     await store.save();
   }
 
+  function queuePersist() {
+    persistChain = persistChain.then(persist).catch((err) => {
+      console.error("Failed to persist overlay:", err);
+    });
+    return persistChain;
+  }
+
   function schedulePersist() {
     if (isHydrating.value) return;
     if (persistTimer) {
@@ -85,7 +93,7 @@ export const useOverlayStore = defineStore("overlay", () => {
     }
     persistTimer = window.setTimeout(() => {
       persistTimer = null;
-      persist();
+      queuePersist();
     }, 500);
   }
 
