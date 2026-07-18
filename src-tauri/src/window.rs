@@ -19,6 +19,12 @@ pub fn destroy_mode_windows(app: &AppHandle, mode: Mode) -> Result<(), String> {
     }
 
     mode_windows.remove(&mode);
+
+    #[cfg(target_os = "windows")]
+    if mode == Mode::Zoom {
+        clear_zoom_hwnd();
+    }
+
     Ok(())
 }
 
@@ -513,7 +519,7 @@ pub fn apply_zoom_capture_exclusion(window: &tauri::WebviewWindow) {
 pub fn set_zoom_capture_exclusion(excluded: bool) {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::UI::WindowsAndMessaging::{
-        SetWindowDisplayAffinity, WINDOW_DISPLAY_AFFINITY,
+        IsWindow, SetWindowDisplayAffinity, WINDOW_DISPLAY_AFFINITY,
     };
 
     let ptr = ZOOM_HWND.load(Ordering::Relaxed);
@@ -523,10 +529,18 @@ pub fn set_zoom_capture_exclusion(excluded: bool) {
     let hwnd = HWND(ptr);
 
     unsafe {
+        if !IsWindow(Some(hwnd)).as_bool() {
+            return;
+        }
         if excluded {
             let _ = SetWindowDisplayAffinity(hwnd, WINDOW_DISPLAY_AFFINITY(0x11));
         } else {
             let _ = SetWindowDisplayAffinity(hwnd, WINDOW_DISPLAY_AFFINITY(0x00));
         }
     }
+}
+
+#[cfg(target_os = "windows")]
+fn clear_zoom_hwnd() {
+    ZOOM_HWND.store(std::ptr::null_mut(), Ordering::Relaxed);
 }
