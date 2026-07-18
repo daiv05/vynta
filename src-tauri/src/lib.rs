@@ -291,7 +291,6 @@ pub fn run() {
             zoom::stop_zoom_stream,
             commands::freeze_zoom,
             commands::unfreeze_zoom,
-            zoom::capture_viewport_without_zoom,
             commands::mag_zoom_show,
             commands::mag_zoom_hide,
             commands::mag_zoom_set_config,

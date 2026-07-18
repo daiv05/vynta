@@ -322,8 +322,4 @@ impl DxgiDuplicator {
             Ok((rgba, region_w, region_h))
         }
     }
-
-    pub fn capture_full_frame(&mut self) -> Result<(Vec<u8>, u32, u32), String> {
-        self.capture_region(0, 0, self.width, self.height)
-    }
 }

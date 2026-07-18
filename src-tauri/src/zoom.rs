@@ -20,47 +20,14 @@ pub fn zoom_stream_handle() -> &'static ArcSwapOption<ZoomStreamHandle> {
     ZOOM_STREAM.get_or_init(ArcSwapOption::empty)
 }
 
-async fn capture_viewport() -> Result<String, String> {
-    tokio::task::spawn_blocking(|| {
-        let mut duplicator =
-            DxgiDuplicator::new_for_point(0, 0).map_err(|e| format!("DxgiDuplicator: {e}"))?;
-
-        let (rgba, width, height) = duplicator
-            .capture_full_frame()
-            .map_err(|e| format!("capture_full_frame: {e}"))?;
-
-        let mut png_data = Vec::new();
-        {
-            let mut encoder = png::Encoder::new(std::io::Cursor::new(&mut png_data), width, height);
-            encoder.set_color(png::ColorType::Rgba);
-            encoder.set_depth(png::BitDepth::Eight);
-            let mut writer = encoder
-                .write_header()
-                .map_err(|e| format!("PNG header: {e}"))?;
-            writer
-                .write_image_data(&rgba)
-                .map_err(|e| format!("PNG write: {e}"))?;
-        }
-
-        use base64::Engine as _;
-        let base64_string = base64::engine::general_purpose::STANDARD.encode(&png_data);
-        let data_url = format!("data:image/png;base64,{}", base64_string);
-        Ok(data_url)
-    })
-    .await
-    .map_err(|e| format!("spawn_blocking: {e}"))?
-}
-
 use std::sync::Mutex;
 static CACHED_DUPLICATOR: Mutex<Option<DxgiDuplicator>> = Mutex::new(None);
 
-fn capture_zoom_region_raw_sync(
+fn with_cached_duplicator_for_point<T>(
     cursor_x: i32,
     cursor_y: i32,
-    size: u32,
-    zoom_level: f32,
-    _filter: ZoomFilter,
-) -> Result<ZoomRegionRawPayload, String> {
+    f: impl FnOnce(&mut DxgiDuplicator) -> Result<T, String>,
+) -> Result<T, String> {
     let mut cache = CACHED_DUPLICATOR
         .lock()
         .map_err(|_| "Mutex locked".to_string())?;
@@ -81,31 +48,41 @@ fn capture_zoom_region_raw_sync(
     }
 
     let dup = cache.as_mut().unwrap();
+    f(dup).inspect_err(|e| {
+        if e.contains("ACCESS_LOST") {
+            *cache = None;
+        }
+    })
+}
 
-    let origin_x = dup.origin_x;
-    let origin_y = dup.origin_y;
-    let level = zoom_level.max(1.0);
-    let region = ((size as f32) / level)
-        .round()
-        .clamp(1.0, MAX_ZOOM_REGION as f32) as i32;
-    let half = region / 2;
-    let local_x = cursor_x - origin_x - half;
-    let local_y = cursor_y - origin_y - half;
+fn capture_zoom_region_raw_sync(
+    cursor_x: i32,
+    cursor_y: i32,
+    size: u32,
+    zoom_level: f32,
+    _filter: ZoomFilter,
+) -> Result<ZoomRegionRawPayload, String> {
+    with_cached_duplicator_for_point(cursor_x, cursor_y, |dup| {
+        let origin_x = dup.origin_x;
+        let origin_y = dup.origin_y;
+        let level = zoom_level.max(1.0);
+        let region = ((size as f32) / level)
+            .round()
+            .clamp(1.0, MAX_ZOOM_REGION as f32) as i32;
+        let half = region / 2;
+        let local_x = cursor_x - origin_x - half;
+        let local_y = cursor_y - origin_y - half;
 
-    let (rgba, width, height) = dup
-        .capture_region(local_x, local_y, region as u32, region as u32)
-        .inspect_err(|e| {
-            if e.contains("ACCESS_LOST") {
-                *cache = None;
-            }
-        })?;
+        let (rgba, width, height) =
+            dup.capture_region(local_x, local_y, region as u32, region as u32)?;
 
-    use base64::Engine as _;
-    let data = base64::engine::general_purpose::STANDARD.encode(&rgba);
-    Ok(ZoomRegionRawPayload {
-        data,
-        width,
-        height,
+        use base64::Engine as _;
+        let data = base64::engine::general_purpose::STANDARD.encode(&rgba);
+        Ok(ZoomRegionRawPayload {
+            data,
+            width,
+            height,
+        })
     })
 }
 
@@ -397,10 +374,4 @@ pub async fn stop_zoom_stream() -> Result<(), String> {
         }
     }
     Ok(())
-}
-
-#[tauri::command]
-pub async fn capture_viewport_without_zoom(app: tauri::AppHandle) -> Result<String, String> {
-    let _ = app;
-    capture_viewport().await
 }
