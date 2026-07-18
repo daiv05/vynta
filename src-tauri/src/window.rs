@@ -312,12 +312,14 @@ pub fn rebuild_mode_windows(
     monitors: &[MonitorContext],
 ) -> Result<(), String> {
     let monitors = monitors.to_vec();
-    if let Err(err) = destroy_mode_windows(app, mode) {
-        eprintln!("[ERROR] Failed to destroy mode windows {:?}: {}", mode, err);
-    }
-    if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
-        eprintln!("[ERROR] Failed to rebuild mode windows {:?}: {}", mode, err);
-    }
+    window_registry().with_mode_lock(mode, || {
+        if let Err(err) = destroy_mode_windows(app, mode) {
+            eprintln!("[ERROR] Failed to destroy mode windows {:?}: {}", mode, err);
+        }
+        if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
+            eprintln!("[ERROR] Failed to rebuild mode windows {:?}: {}", mode, err);
+        }
+    });
     Ok(())
 }
 
@@ -443,34 +445,36 @@ pub fn handle_mode_visibility(app: &AppHandle, mode: Mode, visible: bool) -> Res
             }
         }
 
-        let mut reused_existing = false;
-        if mode_windows_ready(app, mode) {
-            let should_show = mode != Mode::Zoom;
-            if let Err(err) = show_mode_windows_inner(app, mode, should_show) {
-                eprintln!(
-                    "[WARN] Failed to show existing windows for {:?}: {}",
-                    mode, err
-                );
-            } else {
-                reused_existing = true;
+        window_registry().with_mode_lock(mode, || {
+            let mut reused_existing = false;
+            if mode_windows_ready(app, mode) {
+                let should_show = mode != Mode::Zoom;
+                if let Err(err) = show_mode_windows_inner(app, mode, should_show) {
+                    eprintln!(
+                        "[WARN] Failed to show existing windows for {:?}: {}",
+                        mode, err
+                    );
+                } else {
+                    reused_existing = true;
+                }
             }
-        }
 
-        if !reused_existing {
-            match detect_monitors(app) {
-                Ok(monitors) => {
-                    if let Err(err) = destroy_mode_windows(app, mode) {
-                        eprintln!("[ERROR] Failed to destroy windows for {:?}: {}", mode, err);
+            if !reused_existing {
+                match detect_monitors(app) {
+                    Ok(monitors) => {
+                        if let Err(err) = destroy_mode_windows(app, mode) {
+                            eprintln!("[ERROR] Failed to destroy windows for {:?}: {}", mode, err);
+                        }
+                        if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
+                            eprintln!("[ERROR] Failed to build windows for {:?}: {}", mode, err);
+                        }
                     }
-                    if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
-                        eprintln!("[ERROR] Failed to build windows for {:?}: {}", mode, err);
+                    Err(err) => {
+                        eprintln!("[ERROR] Failed to detect monitors: {}", err);
                     }
-                }
-                Err(err) => {
-                    eprintln!("[ERROR] Failed to detect monitors: {}", err);
                 }
             }
-        }
+        });
     } else if mode != Mode::Zoom {
         hide_mode_windows_inner(app, mode);
     }
