@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "mode-windows",
+  "description": "Minimal capability for overlay mode render windows (no global shortcuts, no autostart)",
+  "windows": ["overlay", "whiteboard", "cursor-highlight", "spotlight", "zoom"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "store:default"
+  ]
+}
