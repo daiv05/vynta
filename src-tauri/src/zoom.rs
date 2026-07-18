@@ -12,6 +12,8 @@ use tokio::time::sleep;
 use windows::Win32::Foundation::POINT;
 use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
 
+const MAX_ZOOM_REGION: i32 = 8192;
+
 static ZOOM_STREAM: OnceLock<ArcSwapOption<ZoomStreamHandle>> = OnceLock::new();
 
 pub fn zoom_stream_handle() -> &'static ArcSwapOption<ZoomStreamHandle> {
@@ -83,7 +85,9 @@ fn capture_zoom_region_raw_sync(
     let origin_x = dup.origin_x;
     let origin_y = dup.origin_y;
     let level = zoom_level.max(1.0);
-    let region = ((size as f32) / level).round().max(1.0) as i32;
+    let region = ((size as f32) / level)
+        .round()
+        .clamp(1.0, MAX_ZOOM_REGION as f32) as i32;
     let half = region / 2;
     let local_x = cursor_x - origin_x - half;
     let local_y = cursor_y - origin_y - half;
