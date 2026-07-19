@@ -11,6 +11,7 @@ import {
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useSettingsStore } from "../../../stores/settings";
+import { formatAccelerator } from "../../../utils/format-accelerator";
 
 const settingsStore = useSettingsStore();
 const {
@@ -29,30 +30,6 @@ const {
   modeShortcutsEnabled,
   shortcutMap,
 } = storeToRefs(settingsStore);
-
-const displayTokenMap: Record<string, string> = {
-  commandorcontrol: "Ctrl",
-  ctrl: "Ctrl",
-  control: "Ctrl",
-  shift: "Shift",
-  alt: "Alt",
-  option: "Alt",
-  super: "Win",
-  meta: "Win",
-  win: "Win",
-  windows: "Win",
-};
-
-function formatAccelerator(accelerator: string) {
-  if (!accelerator) return "Sin asignar";
-  return accelerator
-    .split("+")
-    .map((token) => {
-      const key = token.trim().toLowerCase();
-      return displayTokenMap[key] ?? token;
-    })
-    .join(" + ");
-}
 
 import { ALL_SHORTCUTS } from "../../../constants/shortcuts";
 

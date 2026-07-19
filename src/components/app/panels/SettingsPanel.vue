@@ -10,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "toggle-start-with-windows", enabled: boolean): void;
   (event: "request-reset-preferences"): void;
+  (event: "open-onboarding"): void;
 }>();
 
 const { locale } = useI18n();
@@ -70,6 +71,18 @@ function setLocale(newLocale: string) {
           @click="emit('request-reset-preferences')"
         >
           {{ $t("settings.resetPreferences") }}
+        </button>
+      </UiCard>
+
+      <UiCard class="settings-card">
+        <h3>{{ $t("onboarding.reopen") }}</h3>
+        <p>{{ $t("onboarding.reopenDescription") }}</p>
+        <button
+          type="button"
+          class="intro-button"
+          @click="emit('open-onboarding')"
+        >
+          {{ $t("onboarding.reopen") }}
         </button>
       </UiCard>
     </div>
@@ -142,6 +155,16 @@ function setLocale(newLocale: string) {
   background: rgba(92, 18, 18, 0.9);
   border-color: rgba(255, 107, 107, 0.7);
   color: #fff2f2;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.intro-button {
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(93, 210, 255, 0.4);
+  background: rgba(93, 210, 255, 0.14);
+  color: #cfe9ff;
   font-size: 12px;
   cursor: pointer;
 }

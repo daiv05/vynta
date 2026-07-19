@@ -121,6 +121,24 @@
       }
     }
   },
+  "onboarding": {
+    "welcome": {
+      "subtitle": "Anota, resalta y enfoca cualquier cosa en tu pantalla."
+    },
+    "hotkeys": {
+      "title": "Atajos globales y bandeja",
+      "description": "Vynta vive en la bandeja del sistema. Cada modo se activa con su atajo global desde cualquier app — personalízalos en la pestaña Atajos."
+    },
+    "nav": {
+      "back": "Atrás",
+      "next": "Siguiente",
+      "start": "Empezar",
+      "skip": "Saltar"
+    },
+    "stepLabel": "Paso {current} de {total}",
+    "reopen": "Ver introducción",
+    "reopenDescription": "Vuelve a ver la guía de bienvenida."
+  },
   "hotkeys": {
     "title": "Atajos de teclado",
     "placeholder": "Presiona una combinación",

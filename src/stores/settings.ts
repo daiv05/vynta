@@ -42,6 +42,7 @@ type Settings = {
   overlayDockScreenSize: { width: number; height: number };
   whiteboardDockPosition: { x: number; y: number };
   whiteboardGridEnabled: boolean;
+  onboardingCompleted: boolean;
 };
 
 export const useSettingsStore = defineStore("settings", () => {
@@ -102,6 +103,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const startWithWindows = ref(false);
   const restorePreferencesOnLaunch = ref(true);
   const previewEnabled = ref(true);
+  const onboardingCompleted = ref(false);
 
   // Docks
   const overlayDockPosition = ref({ x: 0, y: 0 });
@@ -182,6 +184,10 @@ export const useSettingsStore = defineStore("settings", () => {
 
   function setPreviewEnabled(enabled: boolean) {
     previewEnabled.value = enabled;
+  }
+
+  function setOnboardingCompleted(enabled: boolean) {
+    onboardingCompleted.value = enabled;
   }
 
   function setOverlayDockPosition(pos: { x: number; y: number }) {
@@ -312,6 +318,7 @@ export const useSettingsStore = defineStore("settings", () => {
       overlayDockScreenSize: overlayDockScreenSize.value,
       whiteboardDockPosition: whiteboardDockPosition.value,
       whiteboardGridEnabled: whiteboardGridEnabled.value,
+      onboardingCompleted: onboardingCompleted.value,
     };
   }
 
@@ -377,6 +384,8 @@ export const useSettingsStore = defineStore("settings", () => {
       whiteboardDockPosition.value = settings.whiteboardDockPosition;
     if (typeof settings.whiteboardGridEnabled === "boolean")
       whiteboardGridEnabled.value = settings.whiteboardGridEnabled;
+    if (typeof settings.onboardingCompleted === "boolean")
+      onboardingCompleted.value = settings.onboardingCompleted;
   }
 
   async function persist() {
@@ -424,6 +433,8 @@ export const useSettingsStore = defineStore("settings", () => {
           whiteboardDockPosition.value = stored.whiteboardDockPosition;
         if (typeof stored.whiteboardGridEnabled === "boolean")
           whiteboardGridEnabled.value = stored.whiteboardGridEnabled;
+        if (typeof stored.onboardingCompleted === "boolean")
+          onboardingCompleted.value = stored.onboardingCompleted;
         if (typeof stored.restorePreferencesOnLaunch === "boolean") {
           restorePreferencesOnLaunch.value = stored.restorePreferencesOnLaunch;
         }
@@ -491,6 +502,7 @@ export const useSettingsStore = defineStore("settings", () => {
     overlayDockScreenSize.value = { width: 0, height: 0 };
     whiteboardDockPosition.value = { x: 0, y: 0 };
     whiteboardGridEnabled.value = true;
+    onboardingCompleted.value = false;
   }
 
   async function resetSettings() {
@@ -554,6 +566,7 @@ export const useSettingsStore = defineStore("settings", () => {
     overlayDockScreenSize,
     whiteboardDockPosition,
     whiteboardGridEnabled,
+    onboardingCompleted,
 
     setStrokeColor,
     setDefaultStrokeColor,
@@ -594,5 +607,6 @@ export const useSettingsStore = defineStore("settings", () => {
     setOverlayDockScreenSize,
     setWhiteboardDockPosition,
     setWhiteboardGridEnabled,
+    setOnboardingCompleted,
   };
 });

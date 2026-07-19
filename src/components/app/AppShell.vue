@@ -19,6 +19,7 @@ import { useSettingsStore } from "../../stores/settings";
 import { useToastStore } from "../../stores/toast";
 import { useToolsStore } from "../../stores/tools";
 import type { OverlayPayload } from "../../types/overlay";
+import OnboardingModal from "../modals/OnboardingModal.vue";
 import AppPanel from "./AppPanel.vue";
 
 const toolsStore = useToolsStore();
@@ -55,6 +56,7 @@ const {
   restorePreferencesOnLaunch,
   whiteboardGridEnabled,
   autoEraseEnabled,
+  onboardingCompleted,
 } = storeToRefs(settingsStore);
 
 const { enabledTools, overlayDockOrientation, selectedTool } =
@@ -185,6 +187,20 @@ watch(zoomWindowVisible, (visible) => {
 });
 const tabs = ["Inicio", "Hotkeys", "Configuración"] as const;
 const activeTab = ref<(typeof tabs)[number]>("Inicio");
+
+const showOnboarding = ref(false);
+
+function openOnboarding() {
+  showOnboarding.value = true;
+}
+
+function handleOnboardingClose() {
+  showOnboarding.value = false;
+  if (!onboardingCompleted.value) {
+    settingsStore.setOnboardingCompleted(true);
+  }
+}
+
 const { t, locale } = useI18n();
 
 async function updateTrayMenu() {
@@ -339,6 +355,9 @@ onMounted(async () => {
     overlayStore.hydrate(),
     settingsStore.hydrate(),
   ]);
+  if (!onboardingCompleted.value) {
+    showOnboarding.value = true;
+  }
   unlistenOverlaySyncRequest = await listen("overlay-sync-request", () => {
     emit("overlay-sync", overlayPayload.value);
   });
@@ -506,9 +525,11 @@ onBeforeUnmount(() => {
           @open-whiteboard="toggleWhiteboard"
           @reset-preferences="handleResetPreferences"
           @reset-shortcuts="resetShortcuts"
+          @open-onboarding="openOnboarding"
         />
       </section>
     </div>
+    <OnboardingModal :is-open="showOnboarding" @close="handleOnboardingClose" />
   </div>
 </template>
 
