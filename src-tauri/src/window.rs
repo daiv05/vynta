@@ -147,14 +147,72 @@ pub fn show_mode_windows_inner(app: &AppHandle, mode: Mode, show: bool) -> Resul
     );
 
     if show {
+        #[cfg(target_os = "windows")]
+        {
+            let _ = window.set_background_color(Some(tauri::webview::Color(0, 0, 0, 0)));
+        }
+
         window.show().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())?;
+
+        #[cfg(target_os = "windows")]
+        reassert_transparent_webview_background(&window);
     }
 
     #[cfg(target_os = "windows")]
     force_window_position_native(&window, &target_monitor);
 
     Ok(())
+}
+
+/// Reasserts a fully transparent WebView2 background across the next few
+/// main-thread ticks after showing a reused window.
+///
+/// WebView2 resets its `DefaultBackgroundColor` when a hidden transparent window
+/// is shown again, painting an opaque strip that looks like a ghost title bar
+/// (tauri-apps/tauri#14764). The reset lands during/after `show`, so the color is
+/// re-applied on the immediately following ticks to close the gap before a frame
+/// is presented; wry preserves the alpha only when it is exactly `0`.
+#[cfg(target_os = "windows")]
+fn reassert_transparent_webview_background(window: &tauri::WebviewWindow) {
+    let window = window.clone();
+    std::thread::spawn(move || {
+        for _ in 0..6 {
+            let window_for_bg = window.clone();
+            let _ = window.run_on_main_thread(move || {
+                let _ = window_for_bg.set_background_color(Some(tauri::webview::Color(0, 0, 0, 0)));
+            });
+            std::thread::sleep(std::time::Duration::from_millis(4));
+        }
+    });
+}
+
+#[cfg(target_os = "windows")]
+fn force_window_position_native(window: &tauri::WebviewWindow, monitor: &MonitorContext) {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE};
+
+    let Ok(handle) = window.window_handle() else {
+        return;
+    };
+
+    let hwnd = match handle.as_raw() {
+        RawWindowHandle::Win32(handle) => HWND(handle.hwnd.get() as *mut _),
+        _ => return,
+    };
+
+    unsafe {
+        let _ = SetWindowPos(
+            hwnd,
+            Some(HWND_TOPMOST),
+            monitor.x,
+            monitor.y,
+            monitor.width as i32,
+            monitor.height as i32,
+            SWP_NOACTIVATE,
+        );
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -231,34 +289,6 @@ fn ensure_window_on_monitor_native(window: &tauri::WebviewWindow, monitor: &Moni
             monitor.width as i32,
             monitor.height as i32,
             flags,
-        );
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn force_window_position_native(window: &tauri::WebviewWindow, monitor: &MonitorContext) {
-    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-    use windows::Win32::Foundation::HWND;
-    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE};
-
-    let Ok(handle) = window.window_handle() else {
-        return;
-    };
-
-    let hwnd = match handle.as_raw() {
-        RawWindowHandle::Win32(handle) => HWND(handle.hwnd.get() as *mut _),
-        _ => return,
-    };
-
-    unsafe {
-        let _ = SetWindowPos(
-            hwnd,
-            Some(HWND_TOPMOST),
-            monitor.x,
-            monitor.y,
-            monitor.width as i32,
-            monitor.height as i32,
-            SWP_NOACTIVATE,
         );
     }
 }
