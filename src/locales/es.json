@@ -11,7 +11,7 @@
   "home": {
     "title": "Modos",
     "dock": {
-      "close": "Cerrar dock",
+      "close": "Cerrar modo",
       "color": "Color"
     },
     "actions": {

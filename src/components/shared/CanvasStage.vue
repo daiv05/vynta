@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref, toRef } from "vue";
+import { computed, nextTick, reactive, ref, toRef } from "vue";
 import { useCanvasDrawing } from "../../composables/useCanvasDrawing";
 import type { ToolId } from "../../types/tools";
 
@@ -74,6 +74,8 @@ const textAreaSize = reactive({ width: 160, height: 32 });
 const textInputRef = ref<HTMLTextAreaElement | null>(null);
 const textMirrorRef = ref<HTMLDivElement | null>(null);
 const resizeFrame = ref<number | null>(null);
+
+const isTextEditing = computed(() => textInput.visible);
 
 function getLocalPoint(event: PointerEvent) {
   const container = containerRef.value;
@@ -184,6 +186,7 @@ function handleTextKeydown(event: KeyboardEvent) {
   }
   if (event.key === "Escape") {
     event.preventDefault();
+    event.stopPropagation();
     cancelText();
     return;
   }
@@ -263,6 +266,7 @@ function updateTextAreaSize() {
 defineExpose({
   canvasRef,
   containerRef,
+  isTextEditing,
   undo,
   redo,
   clear,
