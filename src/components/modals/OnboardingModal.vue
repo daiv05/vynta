@@ -281,8 +281,8 @@ onBeforeUnmount(() => {
 }
 
 .onboarding-modal {
-  background: radial-gradient(circle at top left, #151a26, #0e0f13 60%);
-  border: 1px solid rgba(93, 210, 255, 0.18);
+  background: radial-gradient(circle at top left, #151a26, var(--color-bg) 60%);
+  border: 1px solid rgba(var(--color-accent-soft), 0.18);
   border-radius: 18px;
   width: min(92vw, 460px);
   overflow: hidden;
@@ -294,7 +294,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(93, 210, 255, 0.08);
+  border-bottom: 1px solid rgba(var(--color-accent-soft), 0.08);
 }
 
 .brand {
@@ -312,7 +312,7 @@ onBeforeUnmount(() => {
 .brand-name {
   font-size: 15px;
   font-weight: 600;
-  color: #f7f8fc;
+  color: var(--color-text);
 }
 
 .close-button {
@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
 .step-title {
   margin: 0;
   font-size: 20px;
-  color: #f7f8fc;
+  color: var(--color-text);
 }
 
 .step-desc {
@@ -389,7 +389,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: #cfe9ff;
   background: rgba(12, 16, 24, 0.95);
-  border: 1px solid rgba(93, 210, 255, 0.4);
+  border: 1px solid rgba(var(--color-accent-soft), 0.4);
 }
 
 .tool-badge {
@@ -433,7 +433,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  border-top: 1px solid rgba(93, 210, 255, 0.08);
+  border-top: 1px solid rgba(var(--color-accent-soft), 0.08);
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -448,13 +448,13 @@ onBeforeUnmount(() => {
   padding: 0;
   border-radius: 999px;
   border: none;
-  background: rgba(93, 210, 255, 0.25);
+  background: rgba(var(--color-accent-soft), 0.25);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .dot.active {
-  background: #5dd2ff;
+  background: var(--color-accent);
   transform: scale(1.3);
 }
 
@@ -490,12 +490,12 @@ onBeforeUnmount(() => {
 .button-secondary {
   background: rgba(24, 28, 40, 0.9);
   color: #e6ecff;
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
 }
 
 .button-primary {
-  background: #5dd2ff;
-  color: #0b0d12;
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
 }
 
 .modal-fade-enter-active,

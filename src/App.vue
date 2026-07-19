@@ -66,11 +66,18 @@ onMounted(() => {
 
 <style>
 :root {
+  --color-accent: #6fb8d6;
+  --color-accent-soft: 111, 184, 214;
+  --color-bg: #0e0f13;
+  --color-bg-deep: #0b0d12;
+  --color-text: #f7f8fc;
+  --color-stroke-default: #6fb8d6;
+
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #f7f8fc;
-  background-color: #0e0f13;
+  color: var(--color-text);
+  background-color: var(--color-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -85,7 +92,7 @@ body.overlay-mode #app {
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: #5dd2ff #0b0d12;
+  scrollbar-color: var(--color-accent) var(--color-bg-deep);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -95,7 +102,7 @@ body {
   min-height: 100vh;
   width: 100vw;
   min-width: 100vw;
-  background: #0e0f13;
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -116,7 +123,7 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #5dd2ff;
+  background: var(--color-accent);
   border-radius: 999px;
   border: 2px solid rgba(11, 13, 18, 0.9);
 }
@@ -128,8 +135,8 @@ input {
 
 button {
   background: rgba(24, 28, 40, 0.95);
-  color: #f7f8fc;
-  border: 1px solid rgba(93, 210, 255, 0.18);
+  color: var(--color-text);
+  border: 1px solid rgba(var(--color-accent-soft), 0.18);
   border-radius: 12px;
   padding: 8px 12px;
   cursor: pointer;
@@ -148,8 +155,8 @@ select,
 textarea,
 [contenteditable] {
   background: rgba(18, 22, 34, 0.95);
-  color: #f7f8fc;
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  color: var(--color-text);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
   border-radius: 10px;
   padding: 8px 10px;
   outline: none;
@@ -163,8 +170,8 @@ textarea,
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(93, 210, 255, 0.6);
-  box-shadow: 0 0 0 2px rgba(93, 210, 255, 0.15);
+  border-color: rgba(var(--color-accent-soft), 0.6);
+  box-shadow: 0 0 0 2px rgba(var(--color-accent-soft), 0.15);
 }
 
 select {
@@ -186,7 +193,7 @@ input[type="range"] {
   appearance: none;
   height: 6px;
   padding: 0;
-  background: rgba(93, 210, 255, 0.15);
+  background: rgba(var(--color-accent-soft), 0.15);
   border-radius: 999px;
 }
 
@@ -195,7 +202,7 @@ input[type="range"]::-webkit-slider-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #5dd2ff;
+  background: var(--color-accent);
   border: 2px solid rgba(12, 16, 24, 0.9);
 }
 
@@ -203,7 +210,7 @@ input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #5dd2ff;
+  background: var(--color-accent);
   border: 2px solid rgba(12, 16, 24, 0.9);
 }
 
@@ -214,7 +221,7 @@ input[type="color"] {
   height: 28px;
   padding: 0;
   border-radius: 8px;
-  border: 1px solid rgba(93, 210, 255, 0.3);
+  border: 1px solid rgba(var(--color-accent-soft), 0.3);
   background: transparent;
 }
 
@@ -233,15 +240,15 @@ input[type="checkbox"] {
   width: 18px;
   height: 18px;
   border-radius: 6px;
-  border: 1px solid rgba(93, 210, 255, 0.4);
+  border: 1px solid rgba(var(--color-accent-soft), 0.4);
   background: rgba(12, 16, 24, 0.95);
   display: grid;
   place-items: center;
 }
 
 input[type="checkbox"]:checked {
-  background: rgba(93, 210, 255, 0.9);
-  border-color: rgba(93, 210, 255, 0.9);
+  background: rgba(var(--color-accent-soft), 0.9);
+  border-color: rgba(var(--color-accent-soft), 0.9);
 }
 
 input[type="checkbox"]:checked::after {
@@ -249,6 +256,6 @@ input[type="checkbox"]:checked::after {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: #0b0d12;
+  background: var(--color-bg-deep);
 }
 </style>

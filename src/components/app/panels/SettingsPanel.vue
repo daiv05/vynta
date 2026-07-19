@@ -162,8 +162,8 @@ function setLocale(newLocale: string) {
 .intro-button {
   border-radius: 999px;
   padding: 8px 12px;
-  border: 1px solid rgba(93, 210, 255, 0.4);
-  background: rgba(93, 210, 255, 0.14);
+  border: 1px solid rgba(var(--color-accent-soft), 0.4);
+  background: rgba(var(--color-accent-soft), 0.14);
   color: #cfe9ff;
   font-size: 12px;
   cursor: pointer;
@@ -177,7 +177,7 @@ function setLocale(newLocale: string) {
 
 .settings-select {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;

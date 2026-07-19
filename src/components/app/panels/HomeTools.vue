@@ -22,6 +22,7 @@ import { textFontOptions } from "../../../composables/useToolState";
 import { useOverlayStore } from "../../../stores/overlay";
 import { useSettingsStore } from "../../../stores/settings";
 import { useToolsStore } from "../../../stores/tools";
+import { STROKE_DEFAULT } from "../../../theme/tokens";
 import type { ToolId } from "../../../types/tools";
 import type { QuickColorSlot } from "../../../types/ui";
 import StyleEditorModal from "../../modals/StyleEditorModal.vue";
@@ -91,14 +92,14 @@ function slotPreview(slot: QuickColorSlot) {
       .join(", ");
     return `linear-gradient(${slot.gradient.angle}deg, ${stops})`;
   }
-  return slot.color ?? "#5dd2ff";
+  return slot.color ?? STROKE_DEFAULT;
 }
 
 function defaultColorFromSlot(slot: QuickColorSlot) {
   if (slot.type === "gradient" && slot.gradient?.stops?.length) {
-    return slot.gradient.stops[0]?.color ?? "#5dd2ff";
+    return slot.gradient.stops[0]?.color ?? STROKE_DEFAULT;
   }
-  return slot.color ?? "#5dd2ff";
+  return slot.color ?? STROKE_DEFAULT;
 }
 
 function applyQuickSlot(slot: QuickColorSlot) {
@@ -493,7 +494,7 @@ function slotActive(slot: QuickColorSlot) {
 
 .tool-card {
   border-radius: 18px;
-  border: 1px solid rgba(93, 210, 255, 0.08);
+  border: 1px solid rgba(var(--color-accent-soft), 0.08);
   background: rgba(16, 19, 28, 0.88);
   overflow: hidden;
 }
@@ -590,7 +591,7 @@ function slotActive(slot: QuickColorSlot) {
   flex-direction: column;
   gap: 10px;
   background: rgba(19, 23, 34, 0.8);
-  border: 1px solid rgba(93, 210, 255, 0.06);
+  border: 1px solid rgba(var(--color-accent-soft), 0.06);
   border-radius: 14px;
   padding: 14px;
 }
@@ -632,7 +633,7 @@ function slotActive(slot: QuickColorSlot) {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--preview, #5dd2ff);
+  background: var(--preview, var(--color-accent));
 }
 
 .color-dot.active {
@@ -642,7 +643,7 @@ function slotActive(slot: QuickColorSlot) {
 .chip {
   border-radius: 999px;
   padding: 8px 12px;
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   background: rgba(27, 32, 46, 0.9);
   color: #e6e9f2;
   font-size: 12px;
@@ -664,8 +665,8 @@ function slotActive(slot: QuickColorSlot) {
 }
 
 .control-pill.active {
-  border-color: rgba(93, 210, 255, 0.6);
-  background: rgba(93, 210, 255, 0.12);
+  border-color: rgba(var(--color-accent-soft), 0.6);
+  background: rgba(var(--color-accent-soft), 0.12);
 }
 
 .control-icon {
@@ -685,7 +686,7 @@ function slotActive(slot: QuickColorSlot) {
 
 .separator-line {
   height: 1px;
-  background: rgba(93, 210, 255, 0.1);
+  background: rgba(var(--color-accent-soft), 0.1);
   margin: 16px 0;
   width: 100%;
 }
@@ -693,7 +694,7 @@ function slotActive(slot: QuickColorSlot) {
 .select,
 .range {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;
@@ -744,7 +745,7 @@ function slotActive(slot: QuickColorSlot) {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--fill-background, #5dd2ff);
+  background: var(--fill-background, var(--color-accent));
   opacity: var(--fill-opacity, 1);
 }
 

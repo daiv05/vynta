@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { textFontOptions } from "../composables/useToolState";
+import { STROKE_DEFAULT, GRADIENT_DEFAULT_STOPS } from "../theme/tokens";
 import type { GradientStop } from "../types/drawing";
 import type { ModeShortcutId } from "../types/modes";
 import type { ToolDefaults, ToolId } from "../types/tools";
@@ -49,7 +50,7 @@ type Settings = {
 
 export const useSettingsStore = defineStore("settings", () => {
   // Drawing Settings
-  const defaultStrokeColor = ref("#5dd2ff");
+  const defaultStrokeColor = ref(STROKE_DEFAULT);
   const strokeColor = ref(defaultStrokeColor.value);
   const strokeWidth = ref(12);
   const textFont = ref(textFontOptions[0]?.value ?? "inherit");
@@ -65,11 +66,9 @@ export const useSettingsStore = defineStore("settings", () => {
   const gradientEnabled = ref(false);
   const gradientType = ref<"linear" | "radial">("linear");
   const gradientAngle = ref(45);
-  const gradientStops = ref<GradientStop[]>([
-    { color: "#5dd2ff", position: 0 },
-    { color: "#4f7cff", position: 0.5 },
-    { color: "#6a5bff", position: 1 },
-  ]);
+  const gradientStops = ref<GradientStop[]>(
+    GRADIENT_DEFAULT_STOPS.map((stop) => ({ ...stop })),
+  );
 
   // Tool Defaults
   const toolDefaults = ref<Record<ToolId, ToolDefaults>>({} as any);
@@ -488,11 +487,7 @@ export const useSettingsStore = defineStore("settings", () => {
     gradientEnabled.value = false;
     gradientType.value = "linear";
     gradientAngle.value = 45;
-    gradientStops.value = [
-      { color: "#5dd2ff", position: 0 },
-      { color: "#4f7cff", position: 0.5 },
-      { color: "#6a5bff", position: 1 },
-    ];
+    gradientStops.value = GRADIENT_DEFAULT_STOPS.map((stop) => ({ ...stop }));
     toolDefaults.value = {} as any;
     cursorHighlightColor.value = "#a9fec3";
     cursorHighlightSize.value = 75;

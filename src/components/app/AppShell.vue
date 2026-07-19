@@ -548,7 +548,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .shell {
   height: 100vh;
-  background: radial-gradient(circle at top left, #151a26, #0b0d12 55%);
+  background: radial-gradient(circle at top left, #151a26, var(--color-bg-deep) 55%);
   color: #edf1f9;
 }
 
@@ -569,7 +569,7 @@ onBeforeUnmount(() => {
     rgba(9, 11, 16, 0.98),
     rgba(13, 16, 24, 0.96)
   );
-  border-right: 1px solid rgba(93, 210, 255, 0.08);
+  border-right: 1px solid rgba(var(--color-accent-soft), 0.08);
   gap: 24px;
 }
 
@@ -619,7 +619,7 @@ onBeforeUnmount(() => {
 }
 
 .rail-item.active {
-  border-color: rgba(93, 210, 255, 0.5);
+  border-color: rgba(var(--color-accent-soft), 0.5);
   background: rgba(12, 16, 24, 0.95);
   color: #ffffff;
 }
@@ -652,14 +652,14 @@ onBeforeUnmount(() => {
 }
 
 .rail-primary {
-  background: #5dd2ff;
-  color: #0b0d12;
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
 }
 
 .rail-secondary {
   background: rgba(24, 28, 40, 0.9);
   color: #e6ecff;
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
 }
 
 .content {

@@ -24,6 +24,7 @@ import { useI18n } from "vue-i18n";
 import { useOverlayStore } from "../../stores/overlay";
 import { useSettingsStore } from "../../stores/settings";
 import { useToolsStore } from "../../stores/tools";
+import { STROKE_DEFAULT } from "../../theme/tokens";
 import type { ToolId } from "../../types/tools";
 import type { QuickColorSlot } from "../../types/ui";
 
@@ -88,14 +89,14 @@ function slotPreview(slot: QuickColorSlot) {
       .join(", ");
     return `linear-gradient(${slot.gradient.angle}deg, ${stops})`;
   }
-  return slot.color ?? "#5dd2ff";
+  return slot.color ?? STROKE_DEFAULT;
 }
 
 function applyQuickSlot(slot: QuickColorSlot) {
   const color =
     slot.type === "gradient" && slot.gradient?.stops?.length
-      ? (slot.gradient.stops[0]?.color ?? "#5dd2ff")
-      : (slot.color ?? "#5dd2ff");
+      ? (slot.gradient.stops[0]?.color ?? STROKE_DEFAULT)
+      : (slot.color ?? STROKE_DEFAULT);
   settingsStore.setDefaultStrokeColor(color);
 
   if (slot.type === "gradient" && slot.gradient) {
@@ -239,7 +240,7 @@ function slotActive(slot: QuickColorSlot) {
   padding: 10px 12px;
   border-radius: 20px;
   background: rgba(16, 20, 30, 0.82);
-  border: 1px solid rgba(93, 210, 255, 0.35);
+  border: 1px solid rgba(var(--color-accent-soft), 0.35);
   backdrop-filter: blur(18px);
   box-shadow: 0 12px 30px rgba(4, 6, 12, 0.35);
   flex-wrap: wrap;
@@ -272,7 +273,7 @@ function slotActive(slot: QuickColorSlot) {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid rgba(93, 210, 255, 0.22);
+  border: 1px solid rgba(var(--color-accent-soft), 0.22);
   background: rgba(10, 14, 20, 0.65);
   color: #8fd7ff;
   display: flex;
@@ -298,7 +299,7 @@ function slotActive(slot: QuickColorSlot) {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   background: rgba(16, 20, 30, 0.65);
   color: #e6e9f2;
   display: flex;
@@ -309,8 +310,8 @@ function slotActive(slot: QuickColorSlot) {
 }
 
 .dock-btn.active {
-  border-color: rgba(93, 210, 255, 0.7);
-  background: rgba(93, 210, 255, 0.18);
+  border-color: rgba(var(--color-accent-soft), 0.7);
+  background: rgba(var(--color-accent-soft), 0.18);
 }
 
 .dock-icon {
@@ -332,7 +333,7 @@ function slotActive(slot: QuickColorSlot) {
   padding: 6px 8px;
   border-radius: 999px;
   background: rgba(10, 14, 20, 0.5);
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   flex: 0 0 auto;
 }
 
@@ -381,7 +382,7 @@ function slotActive(slot: QuickColorSlot) {
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;
-  border: 1px solid rgba(93, 210, 255, 0.25);
+  border: 1px solid rgba(var(--color-accent-soft), 0.25);
 }
 
 .tooltip:hover .tooltip-text {
@@ -398,7 +399,7 @@ function slotActive(slot: QuickColorSlot) {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--preview, #5dd2ff);
+  background: var(--preview, var(--color-accent));
 }
 
 @media (max-width: 900px) {

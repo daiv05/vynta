@@ -1,6 +1,7 @@
 import { load } from "@tauri-apps/plugin-store";
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
+import { GRADIENT_DEFAULT_STOPS } from "../theme/tokens";
 import type { QuickColorSlot } from "../types/ui";
 
 export const useToolsStore = defineStore("tools", () => {
@@ -11,11 +12,7 @@ export const useToolsStore = defineStore("tools", () => {
       gradient: {
         type: "linear",
         angle: 45,
-        stops: [
-          { color: "#5dd2ff", position: 0 },
-          { color: "#4f7cff", position: 0.5 },
-          { color: "#6a5bff", position: 1 },
-        ],
+        stops: GRADIENT_DEFAULT_STOPS.map((stop) => ({ ...stop })),
       },
     },
     { id: "slot-2", type: "color", color: "#4f7cff" },

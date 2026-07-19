@@ -13,7 +13,7 @@ const props = defineProps<{
 <style scoped>
 .ui-card {
   background: rgba(16, 19, 28, 0.88);
-  border: 1px solid rgba(93, 210, 255, 0.08);
+  border: 1px solid rgba(var(--color-accent-soft), 0.08);
   border-radius: 16px;
   padding: 14px;
   display: flex;
@@ -31,7 +31,7 @@ const props = defineProps<{
 
 .ui-card.interactive:hover {
   transform: translateY(-2px);
-  border-color: rgba(93, 210, 255, 0.22);
+  border-color: rgba(var(--color-accent-soft), 0.22);
   box-shadow: 0 20px 40px rgba(6, 8, 14, 0.55);
 }
 </style>
