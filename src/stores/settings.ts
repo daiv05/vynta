@@ -25,6 +25,8 @@ type Settings = {
   cursorHighlightColor: string;
   cursorHighlightSize: number;
   cursorHighlightShape: "circle" | "square" | "diamond";
+  cursorHighlightBorderWidth: number;
+  cursorHighlightFillOpacity: number;
   shortcutMap: Record<string, string>;
   modeShortcutsEnabled: Record<ModeShortcutId, boolean>;
   spotlightBackdrop: string;
@@ -76,6 +78,8 @@ export const useSettingsStore = defineStore("settings", () => {
   const cursorHighlightColor = ref("#a9fec3");
   const cursorHighlightSize = ref(75);
   const cursorHighlightShape = ref<"circle" | "square" | "diamond">("circle");
+  const cursorHighlightBorderWidth = ref(2);
+  const cursorHighlightFillOpacity = ref(0.1);
 
   // Shortcuts
   const shortcutMap = ref<Record<string, string>>({});
@@ -128,6 +132,14 @@ export const useSettingsStore = defineStore("settings", () => {
 
   function setCursorHighlightShape(shape: "circle" | "square" | "diamond") {
     cursorHighlightShape.value = shape;
+  }
+
+  function setCursorHighlightBorderWidth(width: number) {
+    cursorHighlightBorderWidth.value = width;
+  }
+
+  function setCursorHighlightFillOpacity(opacity: number) {
+    cursorHighlightFillOpacity.value = opacity;
   }
 
   function updateShortcut(id: string, accelerator: string) {
@@ -301,6 +313,8 @@ export const useSettingsStore = defineStore("settings", () => {
       cursorHighlightColor: cursorHighlightColor.value,
       cursorHighlightSize: cursorHighlightSize.value,
       cursorHighlightShape: cursorHighlightShape.value,
+      cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+      cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
       shortcutMap: shortcutMap.value,
       modeShortcutsEnabled: modeShortcutsEnabled.value,
       spotlightBackdrop: spotlightBackdrop.value,
@@ -354,6 +368,10 @@ export const useSettingsStore = defineStore("settings", () => {
       cursorHighlightSize.value = settings.cursorHighlightSize;
     if (settings.cursorHighlightShape)
       cursorHighlightShape.value = settings.cursorHighlightShape;
+    if (typeof settings.cursorHighlightBorderWidth === "number")
+      cursorHighlightBorderWidth.value = settings.cursorHighlightBorderWidth;
+    if (typeof settings.cursorHighlightFillOpacity === "number")
+      cursorHighlightFillOpacity.value = settings.cursorHighlightFillOpacity;
     if (settings.shortcutMap) shortcutMap.value = settings.shortcutMap;
     if (settings.modeShortcutsEnabled)
       modeShortcutsEnabled.value = settings.modeShortcutsEnabled;
@@ -479,6 +497,8 @@ export const useSettingsStore = defineStore("settings", () => {
     cursorHighlightColor.value = "#a9fec3";
     cursorHighlightSize.value = 75;
     cursorHighlightShape.value = "circle";
+    cursorHighlightBorderWidth.value = 2;
+    cursorHighlightFillOpacity.value = 0.1;
     shortcutMap.value = {};
     modeShortcutsEnabled.value = {
       draw: true,
@@ -549,6 +569,8 @@ export const useSettingsStore = defineStore("settings", () => {
     cursorHighlightColor,
     cursorHighlightSize,
     cursorHighlightShape,
+    cursorHighlightBorderWidth,
+    cursorHighlightFillOpacity,
     shortcutMap,
     modeShortcutsEnabled,
     spotlightBackdrop,
@@ -589,6 +611,8 @@ export const useSettingsStore = defineStore("settings", () => {
     setCursorHighlightColor,
     setCursorHighlightSize,
     setCursorHighlightShape,
+    setCursorHighlightBorderWidth,
+    setCursorHighlightFillOpacity,
     updateShortcut,
     setShortcutMap,
     setModeShortcutEnabled,

@@ -31,6 +31,8 @@
         "shape": "Shape",
         "colorShape": "Shape Color",
         "size": "Size",
+        "borderWidth": "Thickness",
+        "fill": "Fill",
         "shapes": {
           "circle": "Circle",
           "square": "Square",
@@ -127,7 +129,7 @@
     },
     "hotkeys": {
       "title": "Global shortcuts & tray",
-      "description": "Vynta lives in the system tray. Each mode is triggered by its global shortcut from any app — customize them in the Shortcuts tab."
+      "description": "Vynta lives in the system tray. Each mode is triggered by its global shortcut from any app, customize them in the Shortcuts tab."
     },
     "nav": {
       "back": "Back",

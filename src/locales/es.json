@@ -31,6 +31,8 @@
         "shape": "Forma",
         "colorShape": "Color de forma",
         "size": "Tamaño",
+        "borderWidth": "Grosor",
+        "fill": "Relleno",
         "shapes": {
           "circle": "Círculo",
           "square": "Cuadrado",
@@ -127,7 +129,7 @@
     },
     "hotkeys": {
       "title": "Atajos globales y bandeja",
-      "description": "Vynta vive en la bandeja del sistema. Cada modo se activa con su atajo global desde cualquier app — personalízalos en la pestaña Atajos."
+      "description": "Vynta vive en la bandeja del sistema. Cada modo se activa con su atajo global desde cualquier app, personalízalos en la pestaña Atajos."
     },
     "nav": {
       "back": "Atrás",

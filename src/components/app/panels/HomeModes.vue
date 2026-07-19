@@ -18,6 +18,8 @@ const {
   cursorHighlightColor,
   cursorHighlightSize,
   cursorHighlightShape,
+  cursorHighlightBorderWidth,
+  cursorHighlightFillOpacity,
   spotlightBackdrop,
   spotlightRadius,
   spotlightOpacity,
@@ -80,13 +82,19 @@ const cursorPreviewStyle = computed(() => {
   const scaledSize = 24 + ((realSize - 24) / (140 - 24)) * (70 - 24);
   const size = `${Math.round(scaledSize)}px`;
 
+  const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+  const r = rgb ? Number.parseInt(rgb[1], 16) : 255;
+  const g = rgb ? Number.parseInt(rgb[2], 16) : 255;
+  const b = rgb ? Number.parseInt(rgb[3], 16) : 255;
+  const fill = `rgba(${r}, ${g}, ${b}, ${cursorHighlightFillOpacity.value})`;
+
   return {
     width: size,
     height: size,
+    borderWidth: `${cursorHighlightBorderWidth.value}px`,
     borderColor: color,
     boxShadow: `0 0 30px ${color}66`,
-    background:
-      "radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 70%)",
+    background: `radial-gradient(circle at center, ${fill}, transparent 70%)`,
     borderRadius:
       cursorHighlightShape.value === "circle"
         ? "999px"
@@ -285,6 +293,38 @@ const zoomPreviewStyle = computed(() => {
                   v-model.number="cursorHighlightSize"
                 />
                 <span class="range-value">{{ cursorHighlightSize }}px</span>
+              </div>
+              <div class="field">
+                <label for="cursor-border-width">{{
+                  $t("home.modes.cursor.borderWidth")
+                }}</label>
+                <input
+                  id="cursor-border-width"
+                  class="range"
+                  type="range"
+                  min="1"
+                  max="12"
+                  step="1"
+                  v-model.number="cursorHighlightBorderWidth"
+                />
+                <span class="range-value">{{ cursorHighlightBorderWidth }}px</span>
+              </div>
+              <div class="field">
+                <label for="cursor-fill">{{
+                  $t("home.modes.cursor.fill")
+                }}</label>
+                <input
+                  id="cursor-fill"
+                  class="range"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  v-model.number="cursorHighlightFillOpacity"
+                />
+                <span class="range-value"
+                  >{{ Math.round(cursorHighlightFillOpacity * 100) }}%</span
+                >
               </div>
               <div class="toggle-row">
                 <button
@@ -942,7 +982,7 @@ const zoomPreviewStyle = computed(() => {
 
 .cursor-halo-preview {
   position: absolute;
-  border: 2px solid;
+  border-style: solid;
   transition: all 0.2s ease;
   z-index: 10;
 }

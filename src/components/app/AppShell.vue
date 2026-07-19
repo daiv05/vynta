@@ -42,6 +42,8 @@ const {
   cursorHighlightColor,
   cursorHighlightSize,
   cursorHighlightShape,
+  cursorHighlightBorderWidth,
+  cursorHighlightFillOpacity,
   shortcutMap,
   modeShortcutsEnabled,
   spotlightBackdrop,
@@ -276,12 +278,20 @@ watch(
 );
 
 watch(
-  [cursorHighlightColor, cursorHighlightSize, cursorHighlightShape],
+  [
+    cursorHighlightColor,
+    cursorHighlightSize,
+    cursorHighlightShape,
+    cursorHighlightBorderWidth,
+    cursorHighlightFillOpacity,
+  ],
   () => {
     emit("cursor-highlight-settings", {
       cursorHighlightColor: cursorHighlightColor.value,
       cursorHighlightSize: cursorHighlightSize.value,
       cursorHighlightShape: cursorHighlightShape.value,
+      cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+      cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
     });
   },
   { immediate: true },
@@ -368,6 +378,8 @@ onMounted(async () => {
         cursorHighlightColor: cursorHighlightColor.value,
         cursorHighlightSize: cursorHighlightSize.value,
         cursorHighlightShape: cursorHighlightShape.value,
+        cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+        cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
       });
     },
   );

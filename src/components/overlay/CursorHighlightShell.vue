@@ -7,8 +7,21 @@ import { useSettingsStore } from "../../stores/settings";
 import type { AppSettings } from "../../types/settings";
 
 const settingsStore = useSettingsStore();
-const { cursorHighlightColor, cursorHighlightSize, cursorHighlightShape } =
-  storeToRefs(settingsStore);
+const {
+  cursorHighlightColor,
+  cursorHighlightSize,
+  cursorHighlightShape,
+  cursorHighlightBorderWidth,
+  cursorHighlightFillOpacity,
+} = storeToRefs(settingsStore);
+
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const r = result ? Number.parseInt(result[1], 16) : 255;
+  const g = result ? Number.parseInt(result[2], 16) : 255;
+  const b = result ? Number.parseInt(result[3], 16) : 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 const { toLocalCoordinates /* , monitorContext */ } = useMonitorContext();
 
@@ -29,10 +42,16 @@ let unlistenVisibility: (() => void) | null = null;
 
 const haloStyle = computed(() => {
   const size = cursorHighlightSize.value;
+  const fill = hexToRgba(
+    cursorHighlightColor.value,
+    cursorHighlightFillOpacity.value,
+  );
   return {
     width: `${size}px`,
     height: `${size}px`,
+    borderWidth: `${cursorHighlightBorderWidth.value}px`,
     borderColor: cursorHighlightColor.value,
+    background: `radial-gradient(circle at center, ${fill}, transparent 70%)`,
     boxShadow: `0 0 30px ${cursorHighlightColor.value}66`,
     "--x": `${position.value.x - size / 2}px`,
     "--y": `${position.value.y - size / 2}px`,
@@ -55,6 +74,14 @@ onMounted(async () => {
       }
       if (event.payload.cursorHighlightShape) {
         cursorHighlightShape.value = event.payload.cursorHighlightShape;
+      }
+      if (typeof event.payload.cursorHighlightBorderWidth === "number") {
+        cursorHighlightBorderWidth.value =
+          event.payload.cursorHighlightBorderWidth;
+      }
+      if (typeof event.payload.cursorHighlightFillOpacity === "number") {
+        cursorHighlightFillOpacity.value =
+          event.payload.cursorHighlightFillOpacity;
       }
     },
   );
@@ -143,11 +170,7 @@ onBeforeUnmount(() => {
 .cursor-halo {
   position: absolute;
   border-radius: 999px;
-  border: 2px solid;
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 255, 255, 0.1) transparent 70%
-  );
+  border-style: solid;
   transform: translate(var(--x), var(--y));
 }
 
