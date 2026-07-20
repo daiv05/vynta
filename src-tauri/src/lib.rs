@@ -27,7 +27,10 @@ fn init_zoom_backend_state() -> RwLock<String> {
     let backend = serde_json::from_str::<ZoomConfig>(json_str)
         .map(|config| config.backend)
         .unwrap_or_else(|e| {
-            eprintln!("Failed to parse zoom.json, falling back to default backend: {}", e);
+            eprintln!(
+                "Failed to parse zoom.json, falling back to default backend: {}",
+                e
+            );
             DEFAULT_ZOOM_BACKEND.to_string()
         });
     RwLock::new(backend)
