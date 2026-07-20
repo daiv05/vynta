@@ -13,6 +13,8 @@ export interface AppSettings {
   cursorHighlightColor: string;
   cursorHighlightSize: number;
   cursorHighlightShape: "circle" | "square" | "diamond";
+  cursorHighlightBorderWidth: number;
+  cursorHighlightFillOpacity: number;
   defaultStrokeColor: string;
   quickColorSlots: Array<QuickColorSlot>;
   shortcutMap: Record<string, string>;

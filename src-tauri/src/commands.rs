@@ -165,8 +165,8 @@ pub fn set_zoom_capture_excluded(excluded: bool) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn freeze_zoom() -> Result<(), String> {
-    crate::zoom::stop_zoom_stream()?;
+pub async fn freeze_zoom() -> Result<(), String> {
+    crate::zoom::stop_zoom_stream().await?;
     #[cfg(target_os = "windows")]
     {
         crate::window::set_zoom_capture_exclusion(false);

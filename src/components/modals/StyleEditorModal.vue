@@ -7,6 +7,7 @@ import type {
 } from "../../composables/useToolState";
 
 import { useToolsStore } from "../../stores/tools";
+import { STROKE_DEFAULT } from "../../theme/tokens";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -63,7 +64,7 @@ function initializeDrafts() {
   }));
   hexDrafts.value = {};
   draftSlots.value.forEach((slot, index) => {
-    const base = slot.color ?? "#5dd2ff";
+    const base = slot.color ?? STROKE_DEFAULT;
     hexDrafts.value[`color-${index}`] = base;
     slot.gradient?.stops?.forEach((stop, stopIndex) => {
       hexDrafts.value[`stop-${index}-${stopIndex}`] = stop.color;
@@ -78,7 +79,7 @@ function slotPreview(slot: QuickColorSlot) {
       .join(", ");
     return `linear-gradient(${slot.gradient.angle}deg, ${stops})`;
   }
-  return slot.color ?? "#5dd2ff";
+  return slot.color ?? STROKE_DEFAULT;
 }
 
 function normalizeHex(value: string) {
@@ -187,7 +188,7 @@ watch(
               <input
                 :id="`slot-color-${index}`"
                 type="color"
-                :value="slot.color ?? '#5dd2ff'"
+                :value="slot.color ?? STROKE_DEFAULT"
                 @input="
                   setSlotColor(slot, ($event.target as HTMLInputElement).value);
                   setHexDraft(
@@ -200,11 +201,11 @@ watch(
                 :id="`slot-color-hex-${index}`"
                 class="input-hex"
                 type="text"
-                :value="getHexDraft(`color-${index}`, slot.color ?? '#5dd2ff')"
+                :value="getHexDraft(`color-${index}`, slot.color ?? STROKE_DEFAULT)"
                 placeholder="#RRGGBB"
                 :class="{
                   invalid: !isValidHex(
-                    getHexDraft(`color-${index}`, slot.color ?? '#5dd2ff'),
+                    getHexDraft(`color-${index}`, slot.color ?? STROKE_DEFAULT),
                   ),
                 }"
                 @input="
@@ -233,7 +234,7 @@ watch(
                       angle: Number(($event.target as HTMLInputElement).value),
                       stops:
                         slot.gradient?.stops ??
-                        normalizeStops(['#5dd2ff', '#4f7cff']),
+                        normalizeStops([STROKE_DEFAULT, '#4f7cff']),
                     }
                   "
                 />
@@ -336,7 +337,7 @@ watch(
   max-height: 80vh;
   overflow: hidden;
   background: #0f131c;
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   border-radius: 18px;
   display: flex;
   flex-direction: column;
@@ -348,7 +349,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(93, 210, 255, 0.08);
+  border-bottom: 1px solid rgba(var(--color-accent-soft), 0.08);
 }
 
 .modal-header h3 {
@@ -359,7 +360,7 @@ watch(
 }
 
 .modal-footer {
-  border-top: 1px solid rgba(93, 210, 255, 0.08);
+  border-top: 1px solid rgba(var(--color-accent-soft), 0.08);
   border-bottom: none;
   gap: 12px;
 }
@@ -379,7 +380,7 @@ watch(
   padding: 12px;
   border-radius: 14px;
   background: rgba(16, 19, 28, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.08);
+  border: 1px solid rgba(var(--color-accent-soft), 0.08);
 }
 
 .slot-preview {
@@ -459,7 +460,7 @@ watch(
 
 .select {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;
@@ -477,7 +478,7 @@ watch(
     "Courier New", monospace;
   text-transform: uppercase;
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 8px;
   padding: 6px 8px;
   color: #e6e9f2;
@@ -495,7 +496,7 @@ watch(
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
   background: rgba(12, 16, 24, 0.95);
   color: #c7cfe2;
   transition: all 0.2s ease;
@@ -503,11 +504,11 @@ watch(
 
 .chip:hover {
   background: rgba(20, 24, 35, 0.95);
-  border-color: rgba(93, 210, 255, 0.3);
+  border-color: rgba(var(--color-accent-soft), 0.3);
 }
 
 .chip.active {
-  background: #5dd2ff;
+  background: var(--color-accent);
   color: #0a0c12;
   border-color: transparent;
   font-weight: 600;

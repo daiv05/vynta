@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref, toRef } from "vue";
+import { computed, nextTick, reactive, ref, toRef } from "vue";
 import { useCanvasDrawing } from "../../composables/useCanvasDrawing";
 import type { ToolId } from "../../types/tools";
 
@@ -74,6 +74,8 @@ const textAreaSize = reactive({ width: 160, height: 32 });
 const textInputRef = ref<HTMLTextAreaElement | null>(null);
 const textMirrorRef = ref<HTMLDivElement | null>(null);
 const resizeFrame = ref<number | null>(null);
+
+const isTextEditing = computed(() => textInput.visible);
 
 function getLocalPoint(event: PointerEvent) {
   const container = containerRef.value;
@@ -184,6 +186,7 @@ function handleTextKeydown(event: KeyboardEvent) {
   }
   if (event.key === "Escape") {
     event.preventDefault();
+    event.stopPropagation();
     cancelText();
     return;
   }
@@ -263,6 +266,7 @@ function updateTextAreaSize() {
 defineExpose({
   canvasRef,
   containerRef,
+  isTextEditing,
   undo,
   redo,
   clear,
@@ -375,7 +379,7 @@ defineExpose({
   border-radius: 999px;
   background: #0f1a24;
   color: #bff2ff;
-  border: 1px solid rgba(93, 210, 255, 0.35);
+  border: 1px solid rgba(var(--color-accent-soft), 0.35);
   font-size: 12px;
   font-weight: 600;
 }
@@ -385,9 +389,9 @@ defineExpose({
   flex: 1;
   min-height: 420px;
   border-radius: 24px;
-  border: 1px dashed rgba(93, 210, 255, 0.3);
+  border: 1px dashed rgba(var(--color-accent-soft), 0.3);
   background:
-    radial-gradient(circle at top, rgba(93, 210, 255, 0.08), transparent),
+    radial-gradient(circle at top, rgba(var(--color-accent-soft), 0.08), transparent),
     #0f1118;
   overflow: hidden;
 }
@@ -408,7 +412,7 @@ defineExpose({
   min-height: 100dvh;
   border-radius: 0;
   border: none;
-  background: #0e0f13;
+  background: var(--color-bg);
 }
 
 .grid {

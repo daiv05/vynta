@@ -10,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "toggle-start-with-windows", enabled: boolean): void;
   (event: "request-reset-preferences"): void;
+  (event: "open-onboarding"): void;
 }>();
 
 const { locale } = useI18n();
@@ -70,6 +71,18 @@ function setLocale(newLocale: string) {
           @click="emit('request-reset-preferences')"
         >
           {{ $t("settings.resetPreferences") }}
+        </button>
+      </UiCard>
+
+      <UiCard class="settings-card">
+        <h3>{{ $t("onboarding.reopen") }}</h3>
+        <p>{{ $t("onboarding.reopenDescription") }}</p>
+        <button
+          type="button"
+          class="intro-button"
+          @click="emit('open-onboarding')"
+        >
+          {{ $t("onboarding.reopen") }}
         </button>
       </UiCard>
     </div>
@@ -146,6 +159,16 @@ function setLocale(newLocale: string) {
   cursor: pointer;
 }
 
+.intro-button {
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--color-accent-soft), 0.4);
+  background: rgba(var(--color-accent-soft), 0.14);
+  color: #cfe9ff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 @media (max-width: 900px) {
   .settings-grid {
     grid-template-columns: 1fr;
@@ -154,7 +177,7 @@ function setLocale(newLocale: string) {
 
 .settings-select {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;

@@ -725,6 +725,9 @@ export function useCanvasDrawing(options: {
       cancelAnimationFrame(autoEraseRaf);
       autoEraseRaf = null;
     }
+    autoEraseTimers.forEach((timer) => clearTimeout(timer));
+    autoEraseTimers.clear();
+    autoEraseFadeMap.clear();
   });
 
   watch(options.clearNonce, () => {

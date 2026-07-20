@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { textFontOptions } from "../composables/useToolState";
+import { STROKE_DEFAULT, GRADIENT_DEFAULT_STOPS } from "../theme/tokens";
 import type { GradientStop } from "../types/drawing";
 import type { ModeShortcutId } from "../types/modes";
 import type { ToolDefaults, ToolId } from "../types/tools";
@@ -25,6 +26,8 @@ type Settings = {
   cursorHighlightColor: string;
   cursorHighlightSize: number;
   cursorHighlightShape: "circle" | "square" | "diamond";
+  cursorHighlightBorderWidth: number;
+  cursorHighlightFillOpacity: number;
   shortcutMap: Record<string, string>;
   modeShortcutsEnabled: Record<ModeShortcutId, boolean>;
   spotlightBackdrop: string;
@@ -42,11 +45,12 @@ type Settings = {
   overlayDockScreenSize: { width: number; height: number };
   whiteboardDockPosition: { x: number; y: number };
   whiteboardGridEnabled: boolean;
+  onboardingCompleted: boolean;
 };
 
 export const useSettingsStore = defineStore("settings", () => {
   // Drawing Settings
-  const defaultStrokeColor = ref("#5dd2ff");
+  const defaultStrokeColor = ref(STROKE_DEFAULT);
   const strokeColor = ref(defaultStrokeColor.value);
   const strokeWidth = ref(12);
   const textFont = ref(textFontOptions[0]?.value ?? "inherit");
@@ -62,11 +66,9 @@ export const useSettingsStore = defineStore("settings", () => {
   const gradientEnabled = ref(false);
   const gradientType = ref<"linear" | "radial">("linear");
   const gradientAngle = ref(45);
-  const gradientStops = ref<GradientStop[]>([
-    { color: "#5dd2ff", position: 0 },
-    { color: "#4f7cff", position: 0.5 },
-    { color: "#6a5bff", position: 1 },
-  ]);
+  const gradientStops = ref<GradientStop[]>(
+    GRADIENT_DEFAULT_STOPS.map((stop) => ({ ...stop })),
+  );
 
   // Tool Defaults
   const toolDefaults = ref<Record<ToolId, ToolDefaults>>({} as any);
@@ -75,6 +77,8 @@ export const useSettingsStore = defineStore("settings", () => {
   const cursorHighlightColor = ref("#a9fec3");
   const cursorHighlightSize = ref(75);
   const cursorHighlightShape = ref<"circle" | "square" | "diamond">("circle");
+  const cursorHighlightBorderWidth = ref(2);
+  const cursorHighlightFillOpacity = ref(0.1);
 
   // Shortcuts
   const shortcutMap = ref<Record<string, string>>({});
@@ -102,6 +106,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const startWithWindows = ref(false);
   const restorePreferencesOnLaunch = ref(true);
   const previewEnabled = ref(true);
+  const onboardingCompleted = ref(false);
 
   // Docks
   const overlayDockPosition = ref({ x: 0, y: 0 });
@@ -126,6 +131,14 @@ export const useSettingsStore = defineStore("settings", () => {
 
   function setCursorHighlightShape(shape: "circle" | "square" | "diamond") {
     cursorHighlightShape.value = shape;
+  }
+
+  function setCursorHighlightBorderWidth(width: number) {
+    cursorHighlightBorderWidth.value = width;
+  }
+
+  function setCursorHighlightFillOpacity(opacity: number) {
+    cursorHighlightFillOpacity.value = opacity;
   }
 
   function updateShortcut(id: string, accelerator: string) {
@@ -182,6 +195,10 @@ export const useSettingsStore = defineStore("settings", () => {
 
   function setPreviewEnabled(enabled: boolean) {
     previewEnabled.value = enabled;
+  }
+
+  function setOnboardingCompleted(enabled: boolean) {
+    onboardingCompleted.value = enabled;
   }
 
   function setOverlayDockPosition(pos: { x: number; y: number }) {
@@ -274,6 +291,7 @@ export const useSettingsStore = defineStore("settings", () => {
   const isHydrating = ref(false);
   let storeRef: Awaited<ReturnType<typeof load>> | null = null;
   let persistTimer: number | null = null;
+  let persistChain: Promise<void> = Promise.resolve();
 
   function snapshotSettings(): Settings {
     return {
@@ -294,6 +312,8 @@ export const useSettingsStore = defineStore("settings", () => {
       cursorHighlightColor: cursorHighlightColor.value,
       cursorHighlightSize: cursorHighlightSize.value,
       cursorHighlightShape: cursorHighlightShape.value,
+      cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+      cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
       shortcutMap: shortcutMap.value,
       modeShortcutsEnabled: modeShortcutsEnabled.value,
       spotlightBackdrop: spotlightBackdrop.value,
@@ -311,6 +331,7 @@ export const useSettingsStore = defineStore("settings", () => {
       overlayDockScreenSize: overlayDockScreenSize.value,
       whiteboardDockPosition: whiteboardDockPosition.value,
       whiteboardGridEnabled: whiteboardGridEnabled.value,
+      onboardingCompleted: onboardingCompleted.value,
     };
   }
 
@@ -346,6 +367,10 @@ export const useSettingsStore = defineStore("settings", () => {
       cursorHighlightSize.value = settings.cursorHighlightSize;
     if (settings.cursorHighlightShape)
       cursorHighlightShape.value = settings.cursorHighlightShape;
+    if (typeof settings.cursorHighlightBorderWidth === "number")
+      cursorHighlightBorderWidth.value = settings.cursorHighlightBorderWidth;
+    if (typeof settings.cursorHighlightFillOpacity === "number")
+      cursorHighlightFillOpacity.value = settings.cursorHighlightFillOpacity;
     if (settings.shortcutMap) shortcutMap.value = settings.shortcutMap;
     if (settings.modeShortcutsEnabled)
       modeShortcutsEnabled.value = settings.modeShortcutsEnabled;
@@ -376,6 +401,8 @@ export const useSettingsStore = defineStore("settings", () => {
       whiteboardDockPosition.value = settings.whiteboardDockPosition;
     if (typeof settings.whiteboardGridEnabled === "boolean")
       whiteboardGridEnabled.value = settings.whiteboardGridEnabled;
+    if (typeof settings.onboardingCompleted === "boolean")
+      onboardingCompleted.value = settings.onboardingCompleted;
   }
 
   async function persist() {
@@ -385,6 +412,13 @@ export const useSettingsStore = defineStore("settings", () => {
     await store.save();
   }
 
+  function queuePersist() {
+    persistChain = persistChain.then(persist).catch((err) => {
+      console.error("Failed to persist settings:", err);
+    });
+    return persistChain;
+  }
+
   function schedulePersist() {
     if (isHydrating.value) return;
     if (persistTimer) {
@@ -392,7 +426,7 @@ export const useSettingsStore = defineStore("settings", () => {
     }
     persistTimer = window.setTimeout(() => {
       persistTimer = null;
-      persist();
+      queuePersist();
     }, 500);
   }
 
@@ -416,6 +450,8 @@ export const useSettingsStore = defineStore("settings", () => {
           whiteboardDockPosition.value = stored.whiteboardDockPosition;
         if (typeof stored.whiteboardGridEnabled === "boolean")
           whiteboardGridEnabled.value = stored.whiteboardGridEnabled;
+        if (typeof stored.onboardingCompleted === "boolean")
+          onboardingCompleted.value = stored.onboardingCompleted;
         if (typeof stored.restorePreferencesOnLaunch === "boolean") {
           restorePreferencesOnLaunch.value = stored.restorePreferencesOnLaunch;
         }
@@ -451,15 +487,13 @@ export const useSettingsStore = defineStore("settings", () => {
     gradientEnabled.value = false;
     gradientType.value = "linear";
     gradientAngle.value = 45;
-    gradientStops.value = [
-      { color: "#5dd2ff", position: 0 },
-      { color: "#4f7cff", position: 0.5 },
-      { color: "#6a5bff", position: 1 },
-    ];
+    gradientStops.value = GRADIENT_DEFAULT_STOPS.map((stop) => ({ ...stop }));
     toolDefaults.value = {} as any;
     cursorHighlightColor.value = "#a9fec3";
     cursorHighlightSize.value = 75;
     cursorHighlightShape.value = "circle";
+    cursorHighlightBorderWidth.value = 2;
+    cursorHighlightFillOpacity.value = 0.1;
     shortcutMap.value = {};
     modeShortcutsEnabled.value = {
       draw: true,
@@ -483,6 +517,7 @@ export const useSettingsStore = defineStore("settings", () => {
     overlayDockScreenSize.value = { width: 0, height: 0 };
     whiteboardDockPosition.value = { x: 0, y: 0 };
     whiteboardGridEnabled.value = true;
+    onboardingCompleted.value = false;
   }
 
   async function resetSettings() {
@@ -529,6 +564,8 @@ export const useSettingsStore = defineStore("settings", () => {
     cursorHighlightColor,
     cursorHighlightSize,
     cursorHighlightShape,
+    cursorHighlightBorderWidth,
+    cursorHighlightFillOpacity,
     shortcutMap,
     modeShortcutsEnabled,
     spotlightBackdrop,
@@ -546,6 +583,7 @@ export const useSettingsStore = defineStore("settings", () => {
     overlayDockScreenSize,
     whiteboardDockPosition,
     whiteboardGridEnabled,
+    onboardingCompleted,
 
     setStrokeColor,
     setDefaultStrokeColor,
@@ -568,6 +606,8 @@ export const useSettingsStore = defineStore("settings", () => {
     setCursorHighlightColor,
     setCursorHighlightSize,
     setCursorHighlightShape,
+    setCursorHighlightBorderWidth,
+    setCursorHighlightFillOpacity,
     updateShortcut,
     setShortcutMap,
     setModeShortcutEnabled,
@@ -586,5 +626,6 @@ export const useSettingsStore = defineStore("settings", () => {
     setOverlayDockScreenSize,
     setWhiteboardDockPosition,
     setWhiteboardGridEnabled,
+    setOnboardingCompleted,
   };
 });

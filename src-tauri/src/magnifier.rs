@@ -309,7 +309,9 @@ unsafe fn apply_transform(mag: HWND, zoom: f32) {
 
 unsafe fn set_circle(hwnd: HWND, size: u32) {
     let rgn = CreateEllipticRgn(0, 0, size as i32, size as i32);
-    SetWindowRgn(hwnd, Some(rgn), true);
+    if SetWindowRgn(hwnd, Some(rgn), true) == 0 {
+        let _ = DeleteObject(rgn.into());
+    }
 }
 
 unsafe fn set_square(hwnd: HWND) {
