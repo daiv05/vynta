@@ -223,16 +223,6 @@ function handleToggleGroupSelection() {
   canvasStageRef.value?.ungroupSelection?.();
 }
 
-function handleToggleLockSelection() {
-  canvasStageRef.value?.toggleSelectionLock?.();
-}
-
-function handleToggleGroupSelection() {
-  const grouped = canvasStageRef.value?.groupSelection?.();
-  if (grouped) return;
-  canvasStageRef.value?.ungroupSelection?.();
-}
-
 function handleCloseOverlay() {
   invoke("set_overlay_visible", { visible: false });
 }
