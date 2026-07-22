@@ -21,6 +21,25 @@
         "solid": "Solida",
         "dashed": "Guiones",
         "dotted": "Punteada"
+      },
+      "text": {
+        "bold": "Negrita",
+        "italic": "Cursiva",
+        "underline": "Subrayado",
+        "alignLeft": "Alinear a la izquierda",
+        "alignCenter": "Centrar",
+        "alignRight": "Alinear a la derecha"
+      },
+      "shapes": {
+        "cornerRadius": "Radio de esquina",
+        "arrowStyle": "Estilo de flecha",
+        "arrowStyles": {
+          "simple": "Simple",
+          "filled": "Rellena",
+          "double": "Doble",
+          "thick": "Gruesa",
+          "stealth": "Sigilo"
+        }
       }
     },
     "actions": {

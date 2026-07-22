@@ -63,16 +63,44 @@ function drawRectangle(
   start: Point,
   end: Point,
   fillOpacity = 0,
+  borderRadius = 0,
 ) {
-  const width = end.x - start.x;
-  const height = end.y - start.y;
+  const x = Math.min(start.x, end.x);
+  const y = Math.min(start.y, end.y);
+  const width = Math.abs(end.x - start.x);
+  const height = Math.abs(end.y - start.y);
+  const radius = Math.max(0, Math.min(borderRadius, width / 2, height / 2));
+
+  if (radius === 0) {
+    if (fillOpacity > 0) {
+      ctx.save();
+      ctx.globalAlpha *= fillOpacity;
+      ctx.fillRect(x, y, width, height);
+      ctx.restore();
+    }
+    ctx.strokeRect(x, y, width, height);
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+
   if (fillOpacity > 0) {
     ctx.save();
     ctx.globalAlpha *= fillOpacity;
-    ctx.fillRect(start.x, start.y, width, height);
+    ctx.fill();
     ctx.restore();
   }
-  ctx.strokeRect(start.x, start.y, width, height);
+  ctx.stroke();
 }
 
 function drawEllipse(
@@ -103,6 +131,12 @@ function drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point) {
   ctx.stroke();
 }
 
+function buildFont(action: DrawAction, size: number, family: string) {
+  const weight = action.fontWeight ?? "normal";
+  const style = action.fontStyle ?? "normal";
+  return `${style} ${weight} ${size}px ${family}`;
+}
+
 function computeSmoothedAngle(points: Point[], windowSize = 4) {
   if (!points || points.length < 2) return 0;
   const maxSegments = Math.max(1, Math.min(windowSize, points.length - 1));
@@ -130,10 +164,54 @@ function computeSmoothedAngle(points: Point[], windowSize = 4) {
 function drawArrow(ctx: CanvasRenderingContext2D, action: DrawAction) {
   const points = action.points;
   if (!points || points.length < 2) return;
+  const style = action.arrowStyle ?? "simple";
   const headLength = Math.max(12, (action.width ?? 1) * 3);
+
+  const drawHead = (tip: Point, angle: number) => {
+    const p1x = tip.x - headLength * Math.cos(angle - Math.PI / 6);
+    const p1y = tip.y - headLength * Math.sin(angle - Math.PI / 6);
+    const p2x = tip.x - headLength * Math.cos(angle + Math.PI / 6);
+    const p2y = tip.y - headLength * Math.sin(angle + Math.PI / 6);
+
+    if (style === "filled" || style === "stealth") {
+      const insetFactor = style === "stealth" ? 0.45 : 0;
+      const backX = tip.x - headLength * insetFactor * Math.cos(angle);
+      const backY = tip.y - headLength * insetFactor * Math.sin(angle);
+      ctx.beginPath();
+      ctx.moveTo(tip.x, tip.y);
+      ctx.lineTo(p1x, p1y);
+      if (style === "stealth") {
+        ctx.lineTo(backX, backY);
+      }
+      ctx.lineTo(p2x, p2y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      return;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(tip.x, tip.y);
+    ctx.lineTo(p1x, p1y);
+    ctx.moveTo(tip.x, tip.y);
+    ctx.lineTo(p2x, p2y);
+    ctx.stroke();
+  };
+
+  const drawTailHead = (tip: Point) => {
+    const next = points.length > 2 ? points[1] : points[1];
+    if (!next) return;
+    const tailAngle = Math.atan2(tip.y - next.y, tip.x - next.x);
+    drawHead(tip, tailAngle);
+  };
 
   const angleWindow = action.smoothing ? 6 : 2;
   const angle = computeSmoothedAngle(points, angleWindow);
+
+  if (style === "thick") {
+    ctx.save();
+    ctx.lineWidth = Math.max(ctx.lineWidth, (action.width ?? 1) * 1.6);
+  }
 
   if (points.length === 2) {
     const start = points[0];
@@ -143,33 +221,25 @@ function drawArrow(ctx: CanvasRenderingContext2D, action: DrawAction) {
     ctx.lineTo(end.x, end.y);
     ctx.stroke();
 
-    const p1x = end.x - headLength * Math.cos(angle - Math.PI / 6);
-    const p1y = end.y - headLength * Math.sin(angle - Math.PI / 6);
-    const p2x = end.x - headLength * Math.cos(angle + Math.PI / 6);
-    const p2y = end.y - headLength * Math.sin(angle + Math.PI / 6);
-
-    ctx.beginPath();
-    ctx.moveTo(end.x, end.y);
-    ctx.lineTo(p1x, p1y);
-    ctx.moveTo(end.x, end.y);
-    ctx.lineTo(p2x, p2y);
-    ctx.stroke();
+    drawHead(end, angle);
+    if (style === "double") {
+      drawHead(start, Math.atan2(start.y - end.y, start.x - end.x));
+    }
+    if (style === "thick") {
+      ctx.restore();
+    }
     return;
   }
 
   drawFreehand(ctx, action, action.smoothing ?? false);
   const last = points[points.length - 1];
-  const p1x = last.x - headLength * Math.cos(angle - Math.PI / 6);
-  const p1y = last.y - headLength * Math.sin(angle - Math.PI / 6);
-  const p2x = last.x - headLength * Math.cos(angle + Math.PI / 6);
-  const p2y = last.y - headLength * Math.sin(angle + Math.PI / 6);
-
-  ctx.beginPath();
-  ctx.moveTo(last.x, last.y);
-  ctx.lineTo(p1x, p1y);
-  ctx.moveTo(last.x, last.y);
-  ctx.lineTo(p2x, p2y);
-  ctx.stroke();
+  drawHead(last, angle);
+  if (style === "double") {
+    drawTailHead(points[0]);
+  }
+  if (style === "thick") {
+    ctx.restore();
+  }
 }
 
 function applyStyle(ctx: CanvasRenderingContext2D, action: DrawAction) {
@@ -349,14 +419,38 @@ export function drawAction(
       const size = adjustedAction.fontSize ?? 16;
       const family =
         adjustedAction.fontFamily ?? '"Segoe UI", system-ui, sans-serif';
+      const align = adjustedAction.textAlign ?? "left";
       const lineHeight = size * 1.35;
-      ctx.font = `600 ${size}px ${family}`;
+      ctx.font = buildFont(adjustedAction, size, family);
       ctx.textBaseline = "top";
+      ctx.textAlign = align;
       const ratio = ctx.getTransform().a || 1;
-      const maxWidth = ctx.canvas.width / ratio - point.x - 8;
+      const canvasWidth = ctx.canvas.width / ratio;
+      const maxWidth =
+        align === "center"
+          ? Math.max(20, Math.min(point.x, canvasWidth - point.x) * 2 - 8)
+          : align === "right"
+            ? Math.max(20, point.x - 8)
+            : Math.max(20, canvasWidth - point.x - 8);
       const lines = wrapText(ctx, adjustedAction.text, maxWidth);
       lines.forEach((line, index) => {
-        ctx.fillText(line, point.x, point.y + index * lineHeight);
+        const y = point.y + index * lineHeight;
+        ctx.fillText(line, point.x, y);
+        if (adjustedAction.textDecoration === "underline") {
+          const textWidth = ctx.measureText(line).width;
+          const lineY = y + lineHeight - Math.max(1, size * 0.1);
+          const startX =
+            align === "center"
+              ? point.x - textWidth / 2
+              : align === "right"
+                ? point.x - textWidth
+                : point.x;
+          ctx.beginPath();
+          ctx.moveTo(startX, lineY);
+          ctx.lineTo(startX + textWidth, lineY);
+          ctx.lineWidth = Math.max(1, size * 0.06);
+          ctx.stroke();
+        }
       });
     }
     ctx.restore();
@@ -367,7 +461,13 @@ export function drawAction(
   if (!start || !end) return;
 
   if (adjustedAction.tool === "rect") {
-    drawRectangle(ctx, start, end, adjustedAction.fillOpacity);
+    drawRectangle(
+      ctx,
+      start,
+      end,
+      adjustedAction.fillOpacity,
+      adjustedAction.borderRadius ?? 0,
+    );
     ctx.restore();
     return;
   }
@@ -430,15 +530,23 @@ export function getDrawBounds(
     const family = action.fontFamily ?? '"Segoe UI", system-ui, sans-serif';
     const lineHeight = size * 1.35;
     ctx.save();
-    ctx.font = `600 ${size}px ${family}`;
+    ctx.font = buildFont(action, size, family);
+    ctx.textAlign = action.textAlign ?? "left";
     const lines = action.text.split(/\r?\n/);
     const width = Math.max(
       1,
       ...lines.map((line) => ctx.measureText(line).width),
     );
     ctx.restore();
+    const align = action.textAlign ?? "left";
+    const startX =
+      align === "center"
+        ? point.x - width / 2
+        : align === "right"
+          ? point.x - width
+          : point.x;
     return {
-      x: point.x,
+      x: startX,
       y: point.y,
       width,
       height: lines.length * lineHeight,

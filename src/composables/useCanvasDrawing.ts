@@ -4,6 +4,10 @@ import type { DrawAction, Point } from "../types/drawing";
 import type { ToolId } from "../types/tools";
 import { exportCanvasAsImage } from "../utils/canvas/exporter";
 import {
+  normalizeDrawAction,
+  normalizeDrawActions,
+} from "../utils/canvas/normalizer";
+import {
   clamp,
   drawAction,
   drawSelection,
@@ -47,6 +51,8 @@ export function useCanvasDrawing(options: {
   gradientType: Ref<"linear" | "radial">;
   gradientAngle: Ref<number>;
   gradientStops: Ref<Array<{ color: string; position: number }>>;
+  borderRadius: Ref<number>;
+  arrowStyle: Ref<"simple" | "filled" | "double" | "thick" | "stealth">;
   autoEraseEnabled: Ref<boolean>;
   autoEraseDelay: Ref<number>;
   clearNonce: Ref<number>;
@@ -274,6 +280,8 @@ export function useCanvasDrawing(options: {
       points: [point],
       gradient,
       smoothing: options.smoothingEnabled.value,
+      borderRadius: options.borderRadius.value,
+      arrowStyle: options.arrowStyle.value,
       composite: tool === "eraser" ? "destination-out" : "source-over",
     };
 
@@ -332,7 +340,7 @@ export function useCanvasDrawing(options: {
       return;
     }
     if (activeAction.value) {
-      const next = { ...activeAction.value };
+      const next = normalizeDrawAction({ ...activeAction.value });
       actions.value.push(next);
       historyStack.value.push({ type: "add", actions: [next] });
       redoStack.value = [];
@@ -687,6 +695,10 @@ export function useCanvasDrawing(options: {
     text: string;
     fontFamily: string;
     fontSize: number;
+    fontWeight: "normal" | "bold";
+    fontStyle: "normal" | "italic";
+    textDecoration: "none" | "underline";
+    textAlign: "left" | "center" | "right";
     color: string;
     gradient?: DrawAction["gradient"];
   }) {
@@ -700,14 +712,19 @@ export function useCanvasDrawing(options: {
       text: payload.text,
       fontSize: payload.fontSize,
       fontFamily: payload.fontFamily,
+      fontWeight: payload.fontWeight,
+      fontStyle: payload.fontStyle,
+      textDecoration: payload.textDecoration,
+      textAlign: payload.textAlign,
       gradient: payload.gradient,
     };
-    actions.value.push(action);
-    historyStack.value.push({ type: "add", actions: [action] });
+    const normalized = normalizeDrawAction(action);
+    actions.value.push(normalized);
+    historyStack.value.push({ type: "add", actions: [normalized] });
     redoStack.value = [];
-    scheduleAutoErase(action);
+    scheduleAutoErase(normalized);
     redraw();
-    return action.id;
+    return normalized.id;
   }
 
   function updateTextAction(payload: {
@@ -715,6 +732,10 @@ export function useCanvasDrawing(options: {
     text: string;
     fontFamily: string;
     fontSize: number;
+    fontWeight: "normal" | "bold";
+    fontStyle: "normal" | "italic";
+    textDecoration: "none" | "underline";
+    textAlign: "left" | "center" | "right";
     color: string;
     gradient?: DrawAction["gradient"];
   }) {
@@ -723,6 +744,10 @@ export function useCanvasDrawing(options: {
     action.text = payload.text;
     action.fontFamily = payload.fontFamily;
     action.fontSize = payload.fontSize;
+    action.fontWeight = payload.fontWeight;
+    action.fontStyle = payload.fontStyle;
+    action.textDecoration = payload.textDecoration;
+    action.textAlign = payload.textAlign;
     action.color = payload.color;
     if (payload.gradient) {
       action.gradient = {
@@ -730,7 +755,23 @@ export function useCanvasDrawing(options: {
         stops: payload.gradient.stops.map((stop) => ({ ...stop })),
       };
     }
+    const normalized = normalizeDrawAction(action);
+    Object.assign(action, normalized);
     scheduleAutoErase(action);
+    redraw();
+  }
+
+  function replaceActions(nextActions: DrawAction[]) {
+    actions.value = normalizeDrawActions(nextActions);
+    historyStack.value = [];
+    redoStack.value = [];
+    autoEraseTimers.forEach((timer) => clearTimeout(timer));
+    autoEraseTimers.clear();
+    autoEraseFadeMap.clear();
+    stopFadeLoopIfIdle();
+    hiddenActionIds.value.clear();
+    clearSelection();
+    actions.value.forEach((action) => scheduleAutoErase(action));
     redraw();
   }
 
@@ -1047,6 +1088,7 @@ export function useCanvasDrawing(options: {
     getTextAction,
     createTextAction,
     updateTextAction,
+    replaceActions,
     removeAction,
     setActionHidden,
     copySelectedAction,

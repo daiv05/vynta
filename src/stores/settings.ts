@@ -14,6 +14,12 @@ type Settings = {
   defaultStrokeColor: string;
   textFont: string;
   textSize: number;
+  textWeight: "normal" | "bold";
+  textStyle: "normal" | "italic";
+  textDecoration: "none" | "underline";
+  textAlign: "left" | "center" | "right";
+  borderRadius: number;
+  arrowStyle: "simple" | "filled" | "double" | "thick" | "stealth";
   fillOpacity: number;
   smoothingEnabled: boolean;
   autoEraseEnabled: boolean;
@@ -45,6 +51,34 @@ type Settings = {
   whiteboardGridEnabled: boolean;
 };
 
+function isTextWeight(value: unknown): value is "normal" | "bold" {
+  return value === "normal" || value === "bold";
+}
+
+function isTextStyle(value: unknown): value is "normal" | "italic" {
+  return value === "normal" || value === "italic";
+}
+
+function isTextDecoration(value: unknown): value is "none" | "underline" {
+  return value === "none" || value === "underline";
+}
+
+function isTextAlign(value: unknown): value is "left" | "center" | "right" {
+  return value === "left" || value === "center" || value === "right";
+}
+
+function isArrowStyle(
+  value: unknown,
+): value is "simple" | "filled" | "double" | "thick" | "stealth" {
+  return (
+    value === "simple" ||
+    value === "filled" ||
+    value === "double" ||
+    value === "thick" ||
+    value === "stealth"
+  );
+}
+
 export const useSettingsStore = defineStore("settings", () => {
   // Drawing Settings
   const defaultStrokeColor = ref("#5dd2ff");
@@ -53,6 +87,14 @@ export const useSettingsStore = defineStore("settings", () => {
   const dashPattern = ref<number[]>([]);
   const textFont = ref(textFontOptions[0]?.value ?? "inherit");
   const textSize = ref(20);
+  const textWeight = ref<"normal" | "bold">("normal");
+  const textStyle = ref<"normal" | "italic">("normal");
+  const textDecoration = ref<"none" | "underline">("none");
+  const textAlign = ref<"left" | "center" | "right">("left");
+  const borderRadius = ref(0);
+  const arrowStyle = ref<
+    "simple" | "filled" | "double" | "thick" | "stealth"
+  >("simple");
   const fillOpacity = ref(0.3);
   const smoothingEnabled = ref(true);
 
@@ -229,6 +271,30 @@ export const useSettingsStore = defineStore("settings", () => {
     textSize.value = size;
   }
 
+  function setTextWeight(weight: "normal" | "bold") {
+    textWeight.value = weight;
+  }
+
+  function setTextStyle(style: "normal" | "italic") {
+    textStyle.value = style;
+  }
+
+  function setTextDecoration(decoration: "none" | "underline") {
+    textDecoration.value = decoration;
+  }
+
+  function setTextAlign(align: "left" | "center" | "right") {
+    textAlign.value = align;
+  }
+
+  function setBorderRadius(radius: number) {
+    borderRadius.value = Math.max(0, Math.round(radius));
+  }
+
+  function setArrowStyle(style: "simple" | "filled" | "double" | "thick" | "stealth") {
+    arrowStyle.value = style;
+  }
+
   function setFillOpacity(opacity: number) {
     fillOpacity.value = opacity;
   }
@@ -291,6 +357,12 @@ export const useSettingsStore = defineStore("settings", () => {
       defaultStrokeColor: defaultStrokeColor.value,
       textFont: textFont.value,
       textSize: textSize.value,
+      textWeight: textWeight.value,
+      textStyle: textStyle.value,
+      textDecoration: textDecoration.value,
+      textAlign: textAlign.value,
+      borderRadius: borderRadius.value,
+      arrowStyle: arrowStyle.value,
       fillOpacity: fillOpacity.value,
       smoothingEnabled: smoothingEnabled.value,
       autoEraseEnabled: autoEraseEnabled.value,
@@ -339,6 +411,14 @@ export const useSettingsStore = defineStore("settings", () => {
       textFont.value = settings.textFont;
     if (typeof settings.textSize === "number")
       textSize.value = settings.textSize;
+    if (isTextWeight(settings.textWeight)) textWeight.value = settings.textWeight;
+    if (isTextStyle(settings.textStyle)) textStyle.value = settings.textStyle;
+    if (isTextDecoration(settings.textDecoration))
+      textDecoration.value = settings.textDecoration;
+    if (isTextAlign(settings.textAlign)) textAlign.value = settings.textAlign;
+    if (typeof settings.borderRadius === "number")
+      borderRadius.value = Math.max(0, Math.round(settings.borderRadius));
+    if (isArrowStyle(settings.arrowStyle)) arrowStyle.value = settings.arrowStyle;
     if (typeof settings.fillOpacity === "number")
       fillOpacity.value = settings.fillOpacity;
     if (typeof settings.smoothingEnabled === "boolean")
@@ -459,6 +539,12 @@ export const useSettingsStore = defineStore("settings", () => {
     dashPattern.value = [];
     textFont.value = textFontOptions[0]?.value ?? "inherit";
     textSize.value = 20;
+    textWeight.value = "normal";
+    textStyle.value = "normal";
+    textDecoration.value = "none";
+    textAlign.value = "left";
+    borderRadius.value = 0;
+    arrowStyle.value = "simple";
     fillOpacity.value = 0.3;
     smoothingEnabled.value = true;
     autoEraseEnabled.value = false;
@@ -532,6 +618,12 @@ export const useSettingsStore = defineStore("settings", () => {
     dashPattern,
     textFont,
     textSize,
+    textWeight,
+    textStyle,
+    textDecoration,
+    textAlign,
+    borderRadius,
+    arrowStyle,
     fillOpacity,
     smoothingEnabled,
     autoEraseEnabled,
@@ -569,6 +661,12 @@ export const useSettingsStore = defineStore("settings", () => {
     setDashPattern,
     setTextFont,
     setTextSize,
+    setTextWeight,
+    setTextStyle,
+    setTextDecoration,
+    setTextAlign,
+    setBorderRadius,
+    setArrowStyle,
     setFillOpacity,
     setSmoothingEnabled,
     setAutoEraseEnabled,

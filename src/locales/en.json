@@ -21,6 +21,25 @@
         "solid": "Solid",
         "dashed": "Dashed",
         "dotted": "Dotted"
+      },
+      "text": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "alignLeft": "Align left",
+        "alignCenter": "Align center",
+        "alignRight": "Align right"
+      },
+      "shapes": {
+        "cornerRadius": "Corner radius",
+        "arrowStyle": "Arrow style",
+        "arrowStyles": {
+          "simple": "Simple",
+          "filled": "Filled",
+          "double": "Double",
+          "thick": "Thick",
+          "stealth": "Stealth"
+        }
       }
     },
     "actions": {

@@ -12,6 +12,12 @@ export type OverlayPayload = {
   dashPattern: number[];
   textFont: string;
   textSize: number;
+  textWeight: "normal" | "bold";
+  textStyle: "normal" | "italic";
+  textDecoration: "none" | "underline";
+  textAlign: "left" | "center" | "right";
+  borderRadius: number;
+  arrowStyle: "simple" | "filled" | "double" | "thick" | "stealth";
   smoothingEnabled: boolean;
   autoEraseEnabled: boolean;
   autoEraseDelay: number;

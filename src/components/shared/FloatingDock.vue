@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   ArrowUpRight,
+  Bold,
   CircleChevronRight,
   Circle,
   Eraser,
@@ -8,6 +12,7 @@ import {
   GripVertical,
   Highlighter,
   Ellipsis,
+  Italic,
   Lock,
   Minus,
   Move,
@@ -19,6 +24,7 @@ import {
   Timer,
   Trash2,
   Type,
+  Underline,
   Undo2,
   Waves,
   X,
@@ -27,6 +33,7 @@ import { storeToRefs } from "pinia";
 import type { Component } from "vue";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useDockModeConfig } from "../../composables/useDockModeConfig";
 import { useOverlayStore } from "../../stores/overlay";
 import { useSettingsStore } from "../../stores/settings";
 import { useToolsStore } from "../../stores/tools";
@@ -34,6 +41,7 @@ import type { ToolId } from "../../types/tools";
 import type { QuickColorSlot } from "../../types/ui";
 
 const props = defineProps<{
+  mode?: "overlay" | "whiteboard";
   layout?: "horizontal" | "vertical";
   showDockActions?: boolean;
   showCloseButton?: boolean;
@@ -60,12 +68,19 @@ const {
   strokeColor,
   strokeWidth,
   dashPattern,
+  shortcutMap,
   smoothingEnabled,
   autoEraseEnabled,
   gradientEnabled,
   gradientType,
   gradientAngle,
   gradientStops,
+  textWeight,
+  textStyle,
+  textDecoration,
+  textAlign,
+  borderRadius,
+  arrowStyle,
 } = storeToRefs(settingsStore);
 
 const { quickColorSlots } = storeToRefs(toolsStore);
@@ -74,24 +89,84 @@ const { selectedTool, enabledTools } = storeToRefs(overlayStore);
 type IconEntry = Component;
 
 const { t } = useI18n();
+const dockMode = computed(() => props.mode ?? "overlay");
+const { availableTools, controls } = useDockModeConfig(dockMode);
 
 const tools = computed<Array<{ id: ToolId; label: string; icon: IconEntry }>>(
   () => [
-    { id: "select", label: t("hotkeys.tools.select"), icon: Move },
-    { id: "pen", label: t("hotkeys.tools.pen"), icon: PenTool },
-    { id: "marker", label: t("hotkeys.tools.marker"), icon: Highlighter },
-    { id: "rect", label: t("hotkeys.tools.rect"), icon: Square },
-    { id: "ellipse", label: t("hotkeys.tools.ellipse"), icon: Circle },
-    { id: "line", label: t("hotkeys.tools.line"), icon: Minus },
-    { id: "arrow", label: t("hotkeys.tools.arrow"), icon: ArrowUpRight },
-    { id: "text", label: t("hotkeys.tools.text"), icon: Type },
-    { id: "eraser", label: t("hotkeys.tools.eraser"), icon: Eraser },
+    {
+      id: "select",
+      label: `${t("hotkeys.tools.select")} (${toolShortcutLabel("tool-select", "V")})`,
+      icon: Move,
+    },
+    {
+      id: "pen",
+      label: `${t("hotkeys.tools.pen")} (${toolShortcutLabel("tool-pen", "P")})`,
+      icon: PenTool,
+    },
+    {
+      id: "marker",
+      label: `${t("hotkeys.tools.marker")} (${toolShortcutLabel("tool-marker", "M")})`,
+      icon: Highlighter,
+    },
+    {
+      id: "rect",
+      label: `${t("hotkeys.tools.rect")} (${toolShortcutLabel("tool-rect", "R")})`,
+      icon: Square,
+    },
+    {
+      id: "ellipse",
+      label: `${t("hotkeys.tools.ellipse")} (${toolShortcutLabel("tool-ellipse", "O")})`,
+      icon: Circle,
+    },
+    {
+      id: "line",
+      label: `${t("hotkeys.tools.line")} (${toolShortcutLabel("tool-line", "L")})`,
+      icon: Minus,
+    },
+    {
+      id: "arrow",
+      label: `${t("hotkeys.tools.arrow")} (${toolShortcutLabel("tool-arrow", "A")})`,
+      icon: ArrowUpRight,
+    },
+    {
+      id: "text",
+      label: `${t("hotkeys.tools.text")} (${toolShortcutLabel("tool-text", "T")})`,
+      icon: Type,
+    },
+    {
+      id: "eraser",
+      label: `${t("hotkeys.tools.eraser")} (${toolShortcutLabel("tool-eraser", "E")})`,
+      icon: Eraser,
+    },
   ],
 );
 
+function formatShortcut(value: string) {
+  return value
+    .split("+")
+    .map((token) => {
+      const key = token.trim().toLowerCase();
+      if (key === "commandorcontrol") return "Ctrl";
+      if (key === "super") return "Win";
+      if (key === "shift") return "Shift";
+      if (key === "alt") return "Alt";
+      return token;
+    })
+    .join("+");
+}
+
+function toolShortcutLabel(shortcutId: string, fallback: string) {
+  const current = shortcutMap.value?.[shortcutId] ?? fallback;
+  return formatShortcut(current);
+}
+
 const visibleTools = computed(() => {
   if (!enabledTools.value) return tools.value;
-  return tools.value.filter((tool) => enabledTools.value?.[tool.id]);
+  const allowed = new Set(availableTools.value);
+  return tools.value.filter(
+    (tool) => enabledTools.value?.[tool.id] && allowed.has(tool.id),
+  );
 });
 
 const moreOptionsOpen = ref(false);
@@ -212,6 +287,55 @@ function toggleMoreOptions() {
   moreOptionsOpen.value = !moreOptionsOpen.value;
 }
 
+const isTextTool = computed(() => selectedTool.value === "text");
+const isRectTool = computed(() => selectedTool.value === "rect");
+const isArrowTool = computed(() => selectedTool.value === "arrow");
+
+const radiusPresets = [0, 8, 16, 24, 32] as const;
+
+function nextBorderRadius() {
+  const currentIndex = radiusPresets.findIndex((value) => value === borderRadius.value);
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % radiusPresets.length : 0;
+  settingsStore.setBorderRadius(radiusPresets[nextIndex]);
+}
+
+const arrowStyleOrder = ["simple", "filled", "double", "thick", "stealth"] as const;
+
+const arrowStyleBadge = computed(() => {
+  const badgeByStyle: Record<typeof arrowStyle.value, string> = {
+    simple: "S",
+    filled: "F",
+    double: "D",
+    thick: "T",
+    stealth: "ST",
+  };
+  return badgeByStyle[arrowStyle.value];
+});
+
+function nextArrowStyle() {
+  const currentIndex = arrowStyleOrder.findIndex((value) => value === arrowStyle.value);
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % arrowStyleOrder.length : 0;
+  settingsStore.setArrowStyle(arrowStyleOrder[nextIndex]);
+}
+
+function toggleTextWeight() {
+  settingsStore.setTextWeight(textWeight.value === "bold" ? "normal" : "bold");
+}
+
+function toggleTextStyle() {
+  settingsStore.setTextStyle(textStyle.value === "italic" ? "normal" : "italic");
+}
+
+function toggleTextDecoration() {
+  settingsStore.setTextDecoration(
+    textDecoration.value === "underline" ? "none" : "underline",
+  );
+}
+
+function setTextAlign(align: "left" | "center" | "right") {
+  settingsStore.setTextAlign(align);
+}
+
 </script>
 
 <template>
@@ -293,6 +417,7 @@ function toggleMoreOptions() {
         @pointerdown.stop
       >
         <button
+          v-if="controls.lineStyle"
           type="button"
           class="dock-btn tooltip"
           :class="{ active: true }"
@@ -304,6 +429,7 @@ function toggleMoreOptions() {
           >
         </button>
         <button
+          v-if="controls.lockSelection"
           type="button"
           class="dock-btn tooltip"
           @click="emit('toggle-lock')"
@@ -312,6 +438,7 @@ function toggleMoreOptions() {
           <span class="tooltip-text">{{ $t("home.dock.lockSelection") }}</span>
         </button>
         <button
+          v-if="controls.groupSelection"
           type="button"
           class="dock-btn tooltip"
           @click="handleToggleGroupSelection"
@@ -320,6 +447,7 @@ function toggleMoreOptions() {
           <span class="tooltip-text">{{ $t("home.dock.toggleGroupSelection") }}</span>
         </button>
         <button
+          v-if="controls.smoothing"
           type="button"
           class="dock-btn tooltip"
           :class="{ active: smoothingEnabled }"
@@ -329,6 +457,7 @@ function toggleMoreOptions() {
           <span class="tooltip-text">{{ $t("hotkeys.tools.smoothing") }}</span>
         </button>
         <button
+          v-if="controls.autoErase"
           type="button"
           class="dock-btn tooltip"
           :class="{ active: autoEraseEnabled }"
@@ -337,6 +466,88 @@ function toggleMoreOptions() {
           <Timer class="dock-icon" />
           <span class="tooltip-text">{{ $t("hotkeys.tools.autoErase") }}</span>
         </button>
+        <button
+          v-if="controls.shapeOptions && isRectTool"
+          type="button"
+          class="dock-btn tooltip"
+          :class="{ active: borderRadius > 0 }"
+          @click="nextBorderRadius"
+        >
+          <Square class="dock-icon" />
+          <span class="icon-badge">{{ borderRadius }}</span>
+          <span class="tooltip-text"
+            >{{ $t("home.dock.shapes.cornerRadius") }}: {{ borderRadius }}px</span
+          >
+        </button>
+        <button
+          v-if="controls.shapeOptions && isArrowTool"
+          type="button"
+          class="dock-btn tooltip"
+          :class="{ active: true }"
+          @click="nextArrowStyle"
+        >
+          <ArrowUpRight class="dock-icon" />
+          <span class="icon-badge icon-badge-text">{{ arrowStyleBadge }}</span>
+          <span class="tooltip-text"
+            >{{ $t("home.dock.shapes.arrowStyle") }}: {{ $t(`home.dock.shapes.arrowStyles.${arrowStyle}`) }}</span
+          >
+        </button>
+        <template v-if="controls.textOptions && isTextTool">
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textWeight === 'bold' }"
+            @click="toggleTextWeight"
+          >
+            <Bold class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.bold") }}</span>
+          </button>
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textStyle === 'italic' }"
+            @click="toggleTextStyle"
+          >
+            <Italic class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.italic") }}</span>
+          </button>
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textDecoration === 'underline' }"
+            @click="toggleTextDecoration"
+          >
+            <Underline class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.underline") }}</span>
+          </button>
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textAlign === 'left' }"
+            @click="setTextAlign('left')"
+          >
+            <AlignLeft class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.alignLeft") }}</span>
+          </button>
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textAlign === 'center' }"
+            @click="setTextAlign('center')"
+          >
+            <AlignCenter class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.alignCenter") }}</span>
+          </button>
+          <button
+            type="button"
+            class="dock-btn tooltip"
+            :class="{ active: textAlign === 'right' }"
+            @click="setTextAlign('right')"
+          >
+            <AlignRight class="dock-icon" />
+            <span class="tooltip-text">{{ $t("home.dock.text.alignRight") }}</span>
+          </button>
+        </template>
       </div>
     </div>
 
@@ -427,6 +638,7 @@ function toggleMoreOptions() {
 }
 
 .dock-btn {
+  position: relative;
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -455,6 +667,29 @@ function toggleMoreOptions() {
 .dock-icon :deep(svg) {
   width: 24px;
   height: 24px;
+}
+
+.icon-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: rgba(93, 210, 255, 0.96);
+  color: #07111b;
+  border: 1px solid rgba(12, 18, 28, 0.35);
+  font-size: 9px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.icon-badge-text {
+  min-width: 18px;
 }
 
 .colors {

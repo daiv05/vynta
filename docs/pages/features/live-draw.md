@@ -86,6 +86,9 @@ The overlay toolbar provides quick access to all tools and settings:
 - **Group / Ungroup selection**: Grouped items are treated as one unit; regrouping can merge existing groups with new items.
 - **Smoothing**: Toggle stroke smoothing.
 - **Auto-erase**: Toggle automatic fade/removal.
+- **Text style (when Text tool is active)**: Bold, italic, underline, and text alignment (left/center/right).
+- **Rectangle corners (when Rectangle tool is active)**: Cycle corner radius presets.
+- **Arrow style (when Arrow tool is active)**: Cycle between simple, filled, double, thick, and stealth styles.
 
 ## Selection & Editing
 

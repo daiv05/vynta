@@ -4,12 +4,12 @@ import { Download, LogOut, Minus, Plus, X } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
 import {
   computed,
-  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
   watch,
 } from "vue";
+import { useFloatingDock } from "../../composables/useFloatingDock";
 import { useI18n } from "vue-i18n";
 import { useLocalShortcuts } from "../../composables/useLocalShortcuts";
 import { useMainWindow } from "../../composables/useMainWindow";
@@ -36,6 +36,12 @@ const {
   dashPattern,
   textFont,
   textSize,
+  textWeight,
+  textStyle,
+  textDecoration,
+  textAlign,
+  borderRadius,
+  arrowStyle,
   smoothingEnabled,
   autoEraseDelay,
   gradientEnabled,
@@ -110,97 +116,16 @@ watch(
     }
   },
 );
-const dockPosition = ref({ ...whiteboardDockPosition.value });
-const dockTooltipPlacement = computed<"top" | "bottom" | "left" | "right">(() => {
-  const viewportWidth = globalThis.innerWidth || 1920;
-  const viewportHeight = globalThis.innerHeight || 1080;
-  const dockWidth = dockRef.value?.offsetWidth ?? 320;
-  const dockHeight = dockRef.value?.offsetHeight ?? 120;
-
-  const spaceTop = dockPosition.value.y;
-  const spaceBottom = viewportHeight - (dockPosition.value.y + dockHeight);
-  const spaceLeft = dockPosition.value.x;
-  const spaceRight = viewportWidth - (dockPosition.value.x + dockWidth);
-
-  if (overlayDockOrientation.value === "vertical") {
-    if (spaceRight < 160 && spaceLeft > spaceRight) return "left";
-    return "right";
-  }
-
-  if (spaceTop < 80 && spaceBottom > spaceTop) return "bottom";
-  if (spaceLeft < 96 && spaceRight > 160) return "right";
-  if (spaceRight < 96 && spaceLeft > 160) return "left";
-  return "top";
-});
 const dockHidden = ref(false);
-const dragging = ref(false);
-const dragOffset = ref({ x: 0, y: 0 });
-
-function startDockDrag(event: PointerEvent) {
-  if (event.button !== 0) return;
-  const dock = dockRef.value;
-  if (!dock) return;
-  dragging.value = true;
-  dragOffset.value = {
-    x: event.clientX - dockPosition.value.x,
-    y: event.clientY - dockPosition.value.y,
-  };
-  globalThis.addEventListener("pointermove", handleDockDrag);
-  globalThis.addEventListener("pointerup", stopDockDrag);
-}
-
-function handleDockDrag(event: PointerEvent) {
-  if (!dragging.value) return;
-  const dock = dockRef.value;
-  const width = dock?.offsetWidth ?? 320;
-  const height = dock?.offsetHeight ?? 520;
-  const nextX = event.clientX - dragOffset.value.x;
-  const nextY = event.clientY - dragOffset.value.y;
-  const maxX = Math.max(0, globalThis.innerWidth - width - 12);
-  const maxY = Math.max(0, globalThis.innerHeight - height - 12);
-  dockPosition.value = {
-    x: Math.min(Math.max(0, nextX), maxX),
-    y: Math.min(Math.max(0, nextY), maxY),
-  };
-}
-
-function stopDockDrag() {
-  if (!dragging.value) return;
-  settingsStore.setWhiteboardDockPosition(dockPosition.value);
-  globalThis.removeEventListener("pointermove", handleDockDrag);
-  globalThis.removeEventListener("pointerup", stopDockDrag);
-}
-
-watch(overlayDockOrientation, () => {
-  nextTick(() => {
-    const dock = dockRef.value;
-    if (!dock) return;
-
-    const dockWidth = dock.offsetWidth || 320;
-    const dockHeight = dock.offsetHeight || 520;
-    const screenWidth = globalThis.innerWidth;
-    const screenHeight = globalThis.innerHeight;
-
-    if (overlayDockOrientation.value === "horizontal") {
-      dockPosition.value = {
-        x: Math.max(0, (screenWidth - dockWidth) / 2),
-        y: Math.max(0, screenHeight - dockHeight - 24),
-      };
-    } else {
-      dockPosition.value = {
-        x: 24,
-        y: Math.max(0, (screenHeight - dockHeight) / 2),
-      };
-    }
-
-    settingsStore.setWhiteboardDockPosition(dockPosition.value);
-  });
-});
-
-watch(whiteboardDockPosition, (value) => {
-  if (!dragging.value) {
-    dockPosition.value = { ...value };
-  }
+const {
+  dockPosition,
+  dockTooltipPlacement,
+  startDockDrag,
+} = useFloatingDock({
+  dockRef,
+  orientation: overlayDockOrientation,
+  sourcePosition: whiteboardDockPosition,
+  persistPosition: settingsStore.setWhiteboardDockPosition,
 });
 
 const overlayPayload = computed<OverlayPayload>(() => ({
@@ -211,6 +136,12 @@ const overlayPayload = computed<OverlayPayload>(() => ({
   dashPattern: [...dashPattern.value],
   textFont: textFont.value,
   textSize: textSize.value,
+  textWeight: textWeight.value,
+  textStyle: textStyle.value,
+  textDecoration: textDecoration.value,
+  textAlign: textAlign.value,
+  borderRadius: borderRadius.value,
+  arrowStyle: arrowStyle.value,
   smoothingEnabled: smoothingEnabled.value,
   autoEraseEnabled: autoEraseEnabled.value,
   autoEraseDelay: autoEraseDelay.value,
@@ -245,6 +176,12 @@ function applyPayload(payload: OverlayPayload) {
   settingsStore.setDashPattern([...payload.dashPattern]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
+  settingsStore.setTextWeight(payload.textWeight ?? "normal");
+  settingsStore.setTextStyle(payload.textStyle ?? "normal");
+  settingsStore.setTextDecoration(payload.textDecoration ?? "none");
+  settingsStore.setTextAlign(payload.textAlign ?? "left");
+  settingsStore.setBorderRadius(payload.borderRadius ?? 0);
+  settingsStore.setArrowStyle(payload.arrowStyle ?? "simple");
   settingsStore.setSmoothingEnabled(payload.smoothingEnabled);
 
   settingsStore.setAutoEraseEnabled(payload.autoEraseEnabled);
@@ -359,6 +296,12 @@ onBeforeUnmount(() => {
       :dash-pattern="dashPattern"
       :text-font="textFont"
       :text-size="textSize"
+      :text-weight="textWeight"
+      :text-style="textStyle"
+      :text-decoration="textDecoration"
+      :text-align="textAlign"
+      :border-radius="borderRadius"
+      :arrow-style="arrowStyle"
       :smoothing-enabled="smoothingEnabled"
       :auto-erase-enabled="autoEraseEnabled"
       :auto-erase-delay="autoEraseDelay"
@@ -380,6 +323,7 @@ onBeforeUnmount(() => {
       :style="{ left: `${dockPosition.x}px`, top: `${dockPosition.y}px` }"
     >
       <FloatingDock
+        mode="whiteboard"
         :layout="overlayDockOrientation"
         :show-drag-handle="true"
         :show-dock-actions="true"

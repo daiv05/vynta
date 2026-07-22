@@ -10,6 +10,12 @@ const props = defineProps<{
   dashPattern: number[];
   textFont: string;
   textSize: number;
+  textWeight: "normal" | "bold";
+  textStyle: "normal" | "italic";
+  textDecoration: "none" | "underline";
+  textAlign: "left" | "center" | "right";
+  borderRadius: number;
+  arrowStyle: "simple" | "filled" | "double" | "thick" | "stealth";
   smoothingEnabled: boolean;
   autoEraseEnabled: boolean;
   autoEraseDelay: number;
@@ -37,6 +43,7 @@ const {
   getTextAction,
   createTextAction,
   updateTextAction,
+  replaceActions,
   removeAction,
   setActionHidden,
   copySelectedAction,
@@ -64,6 +71,8 @@ const {
   gradientType: toRef(props, "gradientType"),
   gradientAngle: toRef(props, "gradientAngle"),
   gradientStops: toRef(props, "gradientStops"),
+  borderRadius: toRef(props, "borderRadius"),
+  arrowStyle: toRef(props, "arrowStyle"),
   autoEraseEnabled: toRef(props, "autoEraseEnabled"),
   autoEraseDelay: toRef(props, "autoEraseDelay"),
   clearNonce: toRef(props, "clearNonce"),
@@ -172,6 +181,10 @@ async function handleStagePointerDown(event: PointerEvent) {
     text: "",
     fontFamily: props.textFont,
     fontSize: props.textSize,
+    fontWeight: props.textWeight,
+    fontStyle: props.textStyle,
+    textDecoration: props.textDecoration,
+    textAlign: props.textAlign,
     color: props.strokeColor,
   });
   setActionHidden(newId, true);
@@ -201,6 +214,10 @@ function commitText() {
       text: content,
       fontFamily: props.textFont,
       fontSize: props.textSize,
+      fontWeight: props.textWeight,
+      fontStyle: props.textStyle,
+      textDecoration: props.textDecoration,
+      textAlign: props.textAlign,
       color: props.strokeColor,
       gradient: {
         enabled: props.gradientEnabled,
@@ -256,6 +273,10 @@ function handleTextInput() {
     text: textInput.value,
     fontFamily: props.textFont,
     fontSize: props.textSize,
+    fontWeight: props.textWeight,
+    fontStyle: props.textStyle,
+    textDecoration: props.textDecoration,
+    textAlign: props.textAlign,
     color: props.strokeColor,
     gradient: {
       enabled: props.gradientEnabled,
@@ -291,8 +312,10 @@ function updateTextAreaSize() {
   const ctx = canvas?.getContext("2d");
   const fontFamily = props.textFont;
   const fontSize = props.textSize;
+  const fontWeight = props.textWeight;
+  const fontStyle = props.textStyle;
   if (ctx) {
-    ctx.font = `600 ${fontSize}px ${fontFamily}`;
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
   }
 
   const lines = textInput.value.length ? textInput.value.split(/\r?\n/) : [" "];
@@ -349,6 +372,7 @@ defineExpose({
   setZoom,
   pan,
   downloadSnapshot,
+  replaceActions,
   toggleSelectionLock,
   groupSelection,
   ungroupSelection,
@@ -398,6 +422,10 @@ defineExpose({
           :style="{
             fontFamily: props.textFont,
             fontSize: `${props.textSize}px`,
+            fontWeight: props.textWeight,
+            fontStyle: props.textStyle,
+            textDecoration: props.textDecoration,
+            textAlign: props.textAlign,
             lineHeight: `${Math.round(props.textSize * 1.35)}px`,
           }"
         ></div>
@@ -409,6 +437,10 @@ defineExpose({
             color: props.strokeColor,
             fontFamily: props.textFont,
             fontSize: `${props.textSize}px`,
+            fontWeight: props.textWeight,
+            fontStyle: props.textStyle,
+            textDecoration: props.textDecoration,
+            textAlign: props.textAlign,
             lineHeight: `${Math.round(props.textSize * 1.35)}px`,
           }"
           @keydown="handleTextKeydown"

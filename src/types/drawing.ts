@@ -43,6 +43,12 @@ export type DrawAction = {
   text?: string;
   fontSize?: number;
   fontFamily?: string;
+  fontWeight?: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline";
+  textAlign?: "left" | "center" | "right";
+  borderRadius?: number;
+  arrowStyle?: "simple" | "filled" | "double" | "thick" | "stealth";
   smoothing?: boolean;
   gradient?: {
     enabled: boolean;

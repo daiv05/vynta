@@ -49,6 +49,9 @@ Whiteboard includes a floating **More options** panel above the dock with shared
 - **Group / Ungroup selection** (groups behave as single units and can be merged)
 - **Smoothing toggle**
 - **Auto-erase toggle**
+- **Text style** (when Text tool is active): bold, italic, underline, align left/center/right
+- **Corner radius** (when Rectangle tool is active): cycle radius presets
+- **Arrow style** (when Arrow tool is active): simple, filled, double, thick, stealth
 
 ## Selection & Editing Actions
 
