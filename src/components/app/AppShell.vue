@@ -19,6 +19,7 @@ import { useSettingsStore } from "../../stores/settings";
 import { useToastStore } from "../../stores/toast";
 import { useToolsStore } from "../../stores/tools";
 import type { OverlayPayload } from "../../types/overlay";
+import OnboardingModal from "../modals/OnboardingModal.vue";
 import AppPanel from "./AppPanel.vue";
 
 const toolsStore = useToolsStore();
@@ -48,6 +49,8 @@ const {
   cursorHighlightColor,
   cursorHighlightSize,
   cursorHighlightShape,
+  cursorHighlightBorderWidth,
+  cursorHighlightFillOpacity,
   shortcutMap,
   modeShortcutsEnabled,
   spotlightBackdrop,
@@ -62,6 +65,7 @@ const {
   restorePreferencesOnLaunch,
   whiteboardGridEnabled,
   autoEraseEnabled,
+  onboardingCompleted,
 } = storeToRefs(settingsStore);
 
 const { enabledTools, overlayDockOrientation, selectedTool } =
@@ -192,6 +196,20 @@ watch(zoomWindowVisible, (visible) => {
 });
 const tabs = ["Inicio", "Hotkeys", "Configuración"] as const;
 const activeTab = ref<(typeof tabs)[number]>("Inicio");
+
+const showOnboarding = ref(false);
+
+function openOnboarding() {
+  showOnboarding.value = true;
+}
+
+function handleOnboardingClose() {
+  showOnboarding.value = false;
+  if (!onboardingCompleted.value) {
+    settingsStore.setOnboardingCompleted(true);
+  }
+}
+
 const { t, locale } = useI18n();
 
 async function updateTrayMenu() {
@@ -274,12 +292,20 @@ watch(
 );
 
 watch(
-  [cursorHighlightColor, cursorHighlightSize, cursorHighlightShape],
+  [
+    cursorHighlightColor,
+    cursorHighlightSize,
+    cursorHighlightShape,
+    cursorHighlightBorderWidth,
+    cursorHighlightFillOpacity,
+  ],
   () => {
     emit("cursor-highlight-settings", {
       cursorHighlightColor: cursorHighlightColor.value,
       cursorHighlightSize: cursorHighlightSize.value,
       cursorHighlightShape: cursorHighlightShape.value,
+      cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+      cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
     });
   },
   { immediate: true },
@@ -360,6 +386,9 @@ onMounted(async () => {
     overlayStore.hydrate(),
     settingsStore.hydrate(),
   ]);
+  if (!onboardingCompleted.value) {
+    showOnboarding.value = true;
+  }
   unlistenOverlaySyncRequest = await listen("overlay-sync-request", () => {
     emit("overlay-sync", overlayPayload.value);
   });
@@ -370,6 +399,8 @@ onMounted(async () => {
         cursorHighlightColor: cursorHighlightColor.value,
         cursorHighlightSize: cursorHighlightSize.value,
         cursorHighlightShape: cursorHighlightShape.value,
+        cursorHighlightBorderWidth: cursorHighlightBorderWidth.value,
+        cursorHighlightFillOpacity: cursorHighlightFillOpacity.value,
       });
     },
   );
@@ -527,16 +558,18 @@ onBeforeUnmount(() => {
           @open-whiteboard="toggleWhiteboard"
           @reset-preferences="handleResetPreferences"
           @reset-shortcuts="resetShortcuts"
+          @open-onboarding="openOnboarding"
         />
       </section>
     </div>
+    <OnboardingModal :is-open="showOnboarding" @close="handleOnboardingClose" />
   </div>
 </template>
 
 <style scoped>
 .shell {
   height: 100vh;
-  background: radial-gradient(circle at top left, #151a26, #0b0d12 55%);
+  background: radial-gradient(circle at top left, #151a26, var(--color-bg-deep) 55%);
   color: #edf1f9;
 }
 
@@ -557,7 +590,7 @@ onBeforeUnmount(() => {
     rgba(9, 11, 16, 0.98),
     rgba(13, 16, 24, 0.96)
   );
-  border-right: 1px solid rgba(93, 210, 255, 0.08);
+  border-right: 1px solid rgba(var(--color-accent-soft), 0.08);
   gap: 24px;
 }
 
@@ -607,7 +640,7 @@ onBeforeUnmount(() => {
 }
 
 .rail-item.active {
-  border-color: rgba(93, 210, 255, 0.5);
+  border-color: rgba(var(--color-accent-soft), 0.5);
   background: rgba(12, 16, 24, 0.95);
   color: #ffffff;
 }
@@ -640,14 +673,14 @@ onBeforeUnmount(() => {
 }
 
 .rail-primary {
-  background: #5dd2ff;
-  color: #0b0d12;
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
 }
 
 .rail-secondary {
   background: rgba(24, 28, 40, 0.9);
   color: #e6ecff;
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
 }
 
 .content {

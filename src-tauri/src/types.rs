@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use tauri::async_runtime::JoinHandle;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -46,14 +46,34 @@ pub struct MonitorContext {
 pub struct WindowRegistry {
     pub mode_windows: RwLock<HashMap<Mode, Vec<String>>>,
     pub current_snapshot: RwLock<String>,
+    mode_locks: HashMap<Mode, Mutex<()>>,
 }
 
 impl WindowRegistry {
     pub fn new() -> Self {
+        let mut mode_locks = HashMap::new();
+        for mode in [Mode::Overlay, Mode::Spotlight, Mode::Highlight, Mode::Zoom] {
+            mode_locks.insert(mode, Mutex::new(()));
+        }
+
         Self {
             mode_windows: RwLock::new(HashMap::new()),
             current_snapshot: RwLock::new(String::new()),
+            mode_locks,
         }
+    }
+
+    /// Serializes the destroy→build→show sequence for a given [`Mode`] so
+    /// concurrent callers (monitor-change loop vs. visibility requests)
+    /// cannot interleave window mutations for the same mode.
+    pub fn with_mode_lock<T>(&self, mode: Mode, f: impl FnOnce() -> T) -> T {
+        let _guard = self
+            .mode_locks
+            .get(&mode)
+            .expect("mode_locks initialized for every Mode variant")
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        f()
     }
 }
 

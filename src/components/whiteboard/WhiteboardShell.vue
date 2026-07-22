@@ -377,8 +377,8 @@ onBeforeUnmount(() => {
 .whiteboard-shell {
   width: 100vw;
   height: 100dvh;
-  background: #0e0f13;
-  color: #f7f8fc;
+  background: var(--color-bg);
+  color: var(--color-text);
   position: relative;
   overflow: hidden;
 }
@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
 
 .action-btn {
   background: rgba(16, 20, 30, 0.65);
-  border: 1px solid rgba(93, 210, 255, 0.15);
+  border: 1px solid rgba(var(--color-accent-soft), 0.15);
   color: #e6e9f2;
   border-radius: 12px;
   padding: 8px 14px;
@@ -430,15 +430,15 @@ onBeforeUnmount(() => {
 }
 
 .action-btn:hover {
-  background: rgba(93, 210, 255, 0.15);
-  border-color: rgba(93, 210, 255, 0.4);
+  background: rgba(var(--color-accent-soft), 0.15);
+  border-color: rgba(var(--color-accent-soft), 0.4);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
   color: #fff;
 }
 
 .action-btn:active {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background: rgba(93, 210, 255, 0.2);
+  background: rgba(var(--color-accent-soft), 0.2);
 }
 
 .action-icon :deep(svg) {
@@ -457,7 +457,7 @@ onBeforeUnmount(() => {
   padding: 8px 12px;
   border-radius: 999px;
   background: rgba(16, 20, 30, 0.65);
-  border: 1px solid rgba(93, 210, 255, 0.15);
+  border: 1px solid rgba(var(--color-accent-soft), 0.15);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   font-size: 13px;
@@ -469,7 +469,7 @@ onBeforeUnmount(() => {
 }
 
 .whiteboard-zoom:hover {
-  border-color: rgba(93, 210, 255, 0.3);
+  border-color: rgba(var(--color-accent-soft), 0.3);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
@@ -491,9 +491,9 @@ onBeforeUnmount(() => {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #5dd2ff;
+  background: var(--color-accent);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(93, 210, 255, 0.5);
+  box-shadow: 0 0 10px rgba(var(--color-accent-soft), 0.5);
   transition:
     transform 0.15s ease,
     background 0.15s ease;
@@ -520,14 +520,14 @@ onBeforeUnmount(() => {
 }
 
 .zoom-btn:hover {
-  background: rgba(93, 210, 255, 0.1);
+  background: rgba(var(--color-accent-soft), 0.1);
   color: #fff;
   transform: scale(1.1);
 }
 
 .zoom-btn:active {
   transform: scale(0.95);
-  background: rgba(93, 210, 255, 0.2);
+  background: rgba(var(--color-accent-soft), 0.2);
 }
 
 .zoom-icon :deep(svg) {

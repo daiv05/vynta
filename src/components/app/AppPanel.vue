@@ -28,6 +28,7 @@ const emit = defineEmits<{
   (event: "reset-preferences"): void;
   (event: "reset-shortcuts"): void;
   (event: "open-config"): void;
+  (event: "open-onboarding"): void;
 }>();
 
 const isConfirmModalOpen = ref(false);
@@ -115,6 +116,7 @@ function handleResetShortcuts() {
         :start-with-windows="props.startWithWindows"
         @toggle-start-with-windows="emit('toggle-start-with-windows', $event)"
         @request-reset-preferences="handleResetPreferences"
+        @open-onboarding="emit('open-onboarding')"
       />
     </div>
 

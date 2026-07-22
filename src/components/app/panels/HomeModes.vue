@@ -11,12 +11,15 @@ import {
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useSettingsStore } from "../../../stores/settings";
+import { formatAccelerator } from "../../../utils/format-accelerator";
 
 const settingsStore = useSettingsStore();
 const {
   cursorHighlightColor,
   cursorHighlightSize,
   cursorHighlightShape,
+  cursorHighlightBorderWidth,
+  cursorHighlightFillOpacity,
   spotlightBackdrop,
   spotlightRadius,
   spotlightOpacity,
@@ -29,30 +32,6 @@ const {
   modeShortcutsEnabled,
   shortcutMap,
 } = storeToRefs(settingsStore);
-
-const displayTokenMap: Record<string, string> = {
-  commandorcontrol: "Ctrl",
-  ctrl: "Ctrl",
-  control: "Ctrl",
-  shift: "Shift",
-  alt: "Alt",
-  option: "Alt",
-  super: "Win",
-  meta: "Win",
-  win: "Win",
-  windows: "Win",
-};
-
-function formatAccelerator(accelerator: string) {
-  if (!accelerator) return "Sin asignar";
-  return accelerator
-    .split("+")
-    .map((token) => {
-      const key = token.trim().toLowerCase();
-      return displayTokenMap[key] ?? token;
-    })
-    .join(" + ");
-}
 
 import { ALL_SHORTCUTS } from "../../../constants/shortcuts";
 
@@ -103,13 +82,19 @@ const cursorPreviewStyle = computed(() => {
   const scaledSize = 24 + ((realSize - 24) / (140 - 24)) * (70 - 24);
   const size = `${Math.round(scaledSize)}px`;
 
+  const rgb = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+  const r = rgb ? Number.parseInt(rgb[1], 16) : 255;
+  const g = rgb ? Number.parseInt(rgb[2], 16) : 255;
+  const b = rgb ? Number.parseInt(rgb[3], 16) : 255;
+  const fill = `rgba(${r}, ${g}, ${b}, ${cursorHighlightFillOpacity.value})`;
+
   return {
     width: size,
     height: size,
+    borderWidth: `${cursorHighlightBorderWidth.value}px`,
     borderColor: color,
     boxShadow: `0 0 30px ${color}66`,
-    background:
-      "radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 70%)",
+    background: `radial-gradient(circle at center, ${fill}, transparent 70%)`,
     borderRadius:
       cursorHighlightShape.value === "circle"
         ? "999px"
@@ -308,6 +293,38 @@ const zoomPreviewStyle = computed(() => {
                   v-model.number="cursorHighlightSize"
                 />
                 <span class="range-value">{{ cursorHighlightSize }}px</span>
+              </div>
+              <div class="field">
+                <label for="cursor-border-width">{{
+                  $t("home.modes.cursor.borderWidth")
+                }}</label>
+                <input
+                  id="cursor-border-width"
+                  class="range"
+                  type="range"
+                  min="1"
+                  max="12"
+                  step="1"
+                  v-model.number="cursorHighlightBorderWidth"
+                />
+                <span class="range-value">{{ cursorHighlightBorderWidth }}px</span>
+              </div>
+              <div class="field">
+                <label for="cursor-fill">{{
+                  $t("home.modes.cursor.fill")
+                }}</label>
+                <input
+                  id="cursor-fill"
+                  class="range"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  v-model.number="cursorHighlightFillOpacity"
+                />
+                <span class="range-value"
+                  >{{ Math.round(cursorHighlightFillOpacity * 100) }}%</span
+                >
               </div>
               <div class="toggle-row">
                 <button
@@ -742,7 +759,7 @@ const zoomPreviewStyle = computed(() => {
 
 .tool-card {
   border-radius: 18px;
-  border: 1px solid rgba(93, 210, 255, 0.08);
+  border: 1px solid rgba(var(--color-accent-soft), 0.08);
   background: rgba(16, 19, 28, 0.88);
   overflow: hidden;
 }
@@ -845,7 +862,7 @@ const zoomPreviewStyle = computed(() => {
   font-size: 11px;
   color: #cfe9ff;
   background: rgba(12, 16, 24, 0.95);
-  border: 1px solid rgba(93, 210, 255, 0.4);
+  border: 1px solid rgba(var(--color-accent-soft), 0.4);
 }
 
 .switch {
@@ -875,7 +892,7 @@ const zoomPreviewStyle = computed(() => {
   height: 22px;
   border-radius: 999px;
   background: rgba(27, 32, 46, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.2);
+  border: 1px solid rgba(var(--color-accent-soft), 0.2);
   display: inline-flex;
   align-items: center;
   padding: 2px;
@@ -893,13 +910,13 @@ const zoomPreviewStyle = computed(() => {
 }
 
 .switch-input:checked + .switch-track {
-  background: rgba(93, 210, 255, 0.2);
-  border-color: rgba(93, 210, 255, 0.6);
+  background: rgba(var(--color-accent-soft), 0.2);
+  border-color: rgba(var(--color-accent-soft), 0.6);
 }
 
 .switch-input:checked + .switch-track .switch-thumb {
   transform: translateX(20px);
-  background: #5dd2ff;
+  background: var(--color-accent);
 }
 
 .tool-body {
@@ -920,7 +937,7 @@ const zoomPreviewStyle = computed(() => {
   flex-direction: column;
   gap: 10px;
   background: rgba(19, 23, 34, 0.8);
-  border: 1px solid rgba(93, 210, 255, 0.06);
+  border: 1px solid rgba(var(--color-accent-soft), 0.06);
   border-radius: 14px;
   padding: 14px;
 }
@@ -965,7 +982,7 @@ const zoomPreviewStyle = computed(() => {
 
 .cursor-halo-preview {
   position: absolute;
-  border: 2px solid;
+  border-style: solid;
   transition: all 0.2s ease;
   z-index: 10;
 }
@@ -993,7 +1010,7 @@ const zoomPreviewStyle = computed(() => {
   position: absolute;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 20px rgba(93, 210, 255, 0.3);
+  box-shadow: 0 0 20px rgba(var(--color-accent-soft), 0.3);
   pointer-events: none;
   z-index: 6;
 }
@@ -1001,7 +1018,7 @@ const zoomPreviewStyle = computed(() => {
 .select,
 .shortcut-input {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;
@@ -1025,7 +1042,7 @@ const zoomPreviewStyle = computed(() => {
 .chip {
   border-radius: 999px;
   padding: 8px 12px;
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   background: rgba(27, 32, 46, 0.9);
   color: #e6e9f2;
   font-size: 12px;
@@ -1034,8 +1051,8 @@ const zoomPreviewStyle = computed(() => {
 }
 
 .chip.active {
-  border-color: rgba(93, 210, 255, 0.7);
-  background: rgba(93, 210, 255, 0.16);
+  border-color: rgba(var(--color-accent-soft), 0.7);
+  background: rgba(var(--color-accent-soft), 0.16);
 }
 
 .color-row {
@@ -1057,7 +1074,7 @@ const zoomPreviewStyle = computed(() => {
   position: relative;
   overflow: hidden;
   box-shadow:
-    0 0 0 3px rgba(93, 210, 255, 0.6),
+    0 0 0 3px rgba(var(--color-accent-soft), 0.6),
     0 4px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
@@ -1067,7 +1084,7 @@ const zoomPreviewStyle = computed(() => {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(93, 210, 255, 0.1),
+    rgba(var(--color-accent-soft), 0.1),
     rgba(79, 124, 255, 0.1)
   );
   border: 2px solid rgba(255, 255, 255, 0.3);

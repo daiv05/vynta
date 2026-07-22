@@ -9,6 +9,22 @@ use windows::Win32::Graphics::Dxgi::*;
 const DXGI_ERROR_WAIT_TIMEOUT: i32 = 0x887A0027u32 as i32;
 const DXGI_ERROR_ACCESS_LOST: i32 = 0x887A0026u32 as i32;
 
+/**
+ * RAII guard that unmaps a mapped D3D11 subresource on drop, including on panic/unwind.
+ */
+struct UnmapGuard<'a> {
+    context: &'a ID3D11DeviceContext,
+    resource: &'a ID3D11Texture2D,
+}
+
+impl Drop for UnmapGuard<'_> {
+    fn drop(&mut self) {
+        unsafe {
+            self.context.Unmap(self.resource, 0);
+        }
+    }
+}
+
 pub struct DxgiDuplicator {
     device: ID3D11Device,
     context: ID3D11DeviceContext,
@@ -270,6 +286,10 @@ impl DxgiDuplicator {
             self.context
                 .Map(staging, 0, D3D11_MAP_READ, 0, Some(&mut mapped))
                 .map_err(|e| format!("Map staging: {e}"))?;
+            let _unmap_guard = UnmapGuard {
+                context: &self.context,
+                resource: staging,
+            };
             let row_pitch = mapped.RowPitch as usize;
             let pixel_count = (region_w * region_h * 4) as usize;
             let mut rgba = Vec::with_capacity(pixel_count);
@@ -297,13 +317,9 @@ impl DxgiDuplicator {
                 }
             }
 
-            self.context.Unmap(staging, 0);
+            drop(_unmap_guard);
 
             Ok((rgba, region_w, region_h))
         }
-    }
-
-    pub fn capture_full_frame(&mut self) -> Result<(Vec<u8>, u32, u32), String> {
-        self.capture_region(0, 0, self.width, self.height)
     }
 }

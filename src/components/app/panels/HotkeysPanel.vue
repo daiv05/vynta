@@ -402,7 +402,7 @@ const shortcutSections = computed(() => [
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: rgba(93, 210, 255, 0.12);
+  background: rgba(var(--color-accent-soft), 0.12);
 }
 
 .hotkey-icon-glyph :deep(svg) {
@@ -433,7 +433,7 @@ const shortcutSections = computed(() => [
 
 .shortcut-input {
   background: rgba(23, 27, 39, 0.9);
-  border: 1px solid rgba(93, 210, 255, 0.1);
+  border: 1px solid rgba(var(--color-accent-soft), 0.1);
   border-radius: 10px;
   padding: 8px 10px;
   color: #e6e9f2;
@@ -442,7 +442,7 @@ const shortcutSections = computed(() => [
 .shortcut-key {
   border-radius: 999px;
   padding: 8px 12px;
-  border: 1px solid rgba(93, 210, 255, 0.12);
+  border: 1px solid rgba(var(--color-accent-soft), 0.12);
   background: rgba(27, 32, 46, 0.9);
   color: #e6e9f2;
   font-size: 11px;

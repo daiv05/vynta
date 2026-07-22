@@ -183,7 +183,7 @@ function handleBackdropClick(event: MouseEvent) {
 }
 
 .button-primary {
-  background: #5dd2ff;
+  background: var(--color-accent);
   color: #000;
   font-weight: 600;
 }

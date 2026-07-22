@@ -19,6 +19,12 @@ pub fn destroy_mode_windows(app: &AppHandle, mode: Mode) -> Result<(), String> {
     }
 
     mode_windows.remove(&mode);
+
+    #[cfg(target_os = "windows")]
+    if mode == Mode::Zoom {
+        clear_zoom_hwnd();
+    }
+
     Ok(())
 }
 
@@ -141,14 +147,72 @@ pub fn show_mode_windows_inner(app: &AppHandle, mode: Mode, show: bool) -> Resul
     );
 
     if show {
+        #[cfg(target_os = "windows")]
+        {
+            let _ = window.set_background_color(Some(tauri::webview::Color(0, 0, 0, 0)));
+        }
+
         window.show().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())?;
+
+        #[cfg(target_os = "windows")]
+        reassert_transparent_webview_background(&window);
     }
 
     #[cfg(target_os = "windows")]
     force_window_position_native(&window, &target_monitor);
 
     Ok(())
+}
+
+/// Reasserts a fully transparent WebView2 background across the next few
+/// main-thread ticks after showing a reused window.
+///
+/// WebView2 resets its `DefaultBackgroundColor` when a hidden transparent window
+/// is shown again, painting an opaque strip that looks like a ghost title bar
+/// (tauri-apps/tauri#14764). The reset lands during/after `show`, so the color is
+/// re-applied on the immediately following ticks to close the gap before a frame
+/// is presented; wry preserves the alpha only when it is exactly `0`.
+#[cfg(target_os = "windows")]
+fn reassert_transparent_webview_background(window: &tauri::WebviewWindow) {
+    let window = window.clone();
+    std::thread::spawn(move || {
+        for _ in 0..6 {
+            let window_for_bg = window.clone();
+            let _ = window.run_on_main_thread(move || {
+                let _ = window_for_bg.set_background_color(Some(tauri::webview::Color(0, 0, 0, 0)));
+            });
+            std::thread::sleep(std::time::Duration::from_millis(4));
+        }
+    });
+}
+
+#[cfg(target_os = "windows")]
+fn force_window_position_native(window: &tauri::WebviewWindow, monitor: &MonitorContext) {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE};
+
+    let Ok(handle) = window.window_handle() else {
+        return;
+    };
+
+    let hwnd = match handle.as_raw() {
+        RawWindowHandle::Win32(handle) => HWND(handle.hwnd.get() as *mut _),
+        _ => return,
+    };
+
+    unsafe {
+        let _ = SetWindowPos(
+            hwnd,
+            Some(HWND_TOPMOST),
+            monitor.x,
+            monitor.y,
+            monitor.width as i32,
+            monitor.height as i32,
+            SWP_NOACTIVATE,
+        );
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -229,34 +293,6 @@ fn ensure_window_on_monitor_native(window: &tauri::WebviewWindow, monitor: &Moni
     }
 }
 
-#[cfg(target_os = "windows")]
-fn force_window_position_native(window: &tauri::WebviewWindow, monitor: &MonitorContext) {
-    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-    use windows::Win32::Foundation::HWND;
-    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE};
-
-    let Ok(handle) = window.window_handle() else {
-        return;
-    };
-
-    let hwnd = match handle.as_raw() {
-        RawWindowHandle::Win32(handle) => HWND(handle.hwnd.get() as *mut _),
-        _ => return,
-    };
-
-    unsafe {
-        let _ = SetWindowPos(
-            hwnd,
-            Some(HWND_TOPMOST),
-            monitor.x,
-            monitor.y,
-            monitor.width as i32,
-            monitor.height as i32,
-            SWP_NOACTIVATE,
-        );
-    }
-}
-
 pub fn hide_mode_windows_inner(app: &AppHandle, mode: Mode) {
     let registry = window_registry();
     if let Ok(mode_windows) = registry.mode_windows.read() {
@@ -312,12 +348,14 @@ pub fn rebuild_mode_windows(
     monitors: &[MonitorContext],
 ) -> Result<(), String> {
     let monitors = monitors.to_vec();
-    if let Err(err) = destroy_mode_windows(app, mode) {
-        eprintln!("[ERROR] Failed to destroy mode windows {:?}: {}", mode, err);
-    }
-    if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
-        eprintln!("[ERROR] Failed to rebuild mode windows {:?}: {}", mode, err);
-    }
+    window_registry().with_mode_lock(mode, || {
+        if let Err(err) = destroy_mode_windows(app, mode) {
+            eprintln!("[ERROR] Failed to destroy mode windows {:?}: {}", mode, err);
+        }
+        if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
+            eprintln!("[ERROR] Failed to rebuild mode windows {:?}: {}", mode, err);
+        }
+    });
     Ok(())
 }
 
@@ -443,34 +481,36 @@ pub fn handle_mode_visibility(app: &AppHandle, mode: Mode, visible: bool) -> Res
             }
         }
 
-        let mut reused_existing = false;
-        if mode_windows_ready(app, mode) {
-            let should_show = mode != Mode::Zoom;
-            if let Err(err) = show_mode_windows_inner(app, mode, should_show) {
-                eprintln!(
-                    "[WARN] Failed to show existing windows for {:?}: {}",
-                    mode, err
-                );
-            } else {
-                reused_existing = true;
+        window_registry().with_mode_lock(mode, || {
+            let mut reused_existing = false;
+            if mode_windows_ready(app, mode) {
+                let should_show = mode != Mode::Zoom;
+                if let Err(err) = show_mode_windows_inner(app, mode, should_show) {
+                    eprintln!(
+                        "[WARN] Failed to show existing windows for {:?}: {}",
+                        mode, err
+                    );
+                } else {
+                    reused_existing = true;
+                }
             }
-        }
 
-        if !reused_existing {
-            match detect_monitors(app) {
-                Ok(monitors) => {
-                    if let Err(err) = destroy_mode_windows(app, mode) {
-                        eprintln!("[ERROR] Failed to destroy windows for {:?}: {}", mode, err);
+            if !reused_existing {
+                match detect_monitors(app) {
+                    Ok(monitors) => {
+                        if let Err(err) = destroy_mode_windows(app, mode) {
+                            eprintln!("[ERROR] Failed to destroy windows for {:?}: {}", mode, err);
+                        }
+                        if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
+                            eprintln!("[ERROR] Failed to build windows for {:?}: {}", mode, err);
+                        }
                     }
-                    if let Err(err) = build_mode_windows_inner(app, mode, &monitors, true) {
-                        eprintln!("[ERROR] Failed to build windows for {:?}: {}", mode, err);
+                    Err(err) => {
+                        eprintln!("[ERROR] Failed to detect monitors: {}", err);
                     }
-                }
-                Err(err) => {
-                    eprintln!("[ERROR] Failed to detect monitors: {}", err);
                 }
             }
-        }
+        });
     } else if mode != Mode::Zoom {
         hide_mode_windows_inner(app, mode);
     }
@@ -509,7 +549,7 @@ pub fn apply_zoom_capture_exclusion(window: &tauri::WebviewWindow) {
 pub fn set_zoom_capture_exclusion(excluded: bool) {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::UI::WindowsAndMessaging::{
-        SetWindowDisplayAffinity, WINDOW_DISPLAY_AFFINITY,
+        IsWindow, SetWindowDisplayAffinity, WINDOW_DISPLAY_AFFINITY,
     };
 
     let ptr = ZOOM_HWND.load(Ordering::Relaxed);
@@ -519,10 +559,18 @@ pub fn set_zoom_capture_exclusion(excluded: bool) {
     let hwnd = HWND(ptr);
 
     unsafe {
+        if !IsWindow(Some(hwnd)).as_bool() {
+            return;
+        }
         if excluded {
             let _ = SetWindowDisplayAffinity(hwnd, WINDOW_DISPLAY_AFFINITY(0x11));
         } else {
             let _ = SetWindowDisplayAffinity(hwnd, WINDOW_DISPLAY_AFFINITY(0x00));
         }
     }
+}
+
+#[cfg(target_os = "windows")]
+fn clear_zoom_hwnd() {
+    ZOOM_HWND.store(std::ptr::null_mut(), Ordering::Relaxed);
 }

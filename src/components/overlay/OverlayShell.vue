@@ -223,8 +223,18 @@ function handleToggleGroupSelection() {
   canvasStageRef.value?.ungroupSelection?.();
 }
 
-function handleHideDock() {
-  dockHidden.value = true;
+function handleToggleLockSelection() {
+  canvasStageRef.value?.toggleSelectionLock?.();
+}
+
+function handleToggleGroupSelection() {
+  const grouped = canvasStageRef.value?.groupSelection?.();
+  if (grouped) return;
+  canvasStageRef.value?.ungroupSelection?.();
+}
+
+function handleCloseOverlay() {
+  invoke("set_overlay_visible", { visible: false });
 }
 
 function handleToggleDock() {
@@ -364,9 +374,10 @@ onMounted(async () => {
   });
   keydownListener = (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
+    if (canvasStageRef.value?.isTextEditing) return;
     event.preventDefault();
     event.stopPropagation();
-    handleClear();
+    handleCloseOverlay();
   };
   localShortcutListener = (event) => handleLocalShortcut(event);
   globalThis.addEventListener("keydown", keydownListener);
@@ -490,7 +501,7 @@ onBeforeUnmount(() => {
         @toggle-group-selection="handleToggleGroupSelection"
         @drag-handle="startDockDrag"
         @open-config="handleOpenConfig"
-        @close-dock="handleHideDock"
+        @close-dock="handleCloseOverlay"
       />
     </div>
   </div>

@@ -360,11 +360,13 @@ onMounted(async () => {
         );
         sourceBuffer = sourceImageData.data;
       }
-      if (sourceImageData) {
+      if (sourceImageData && sourceBuffer) {
         const decoded = decodeBase64(event.payload.data);
-        sourceBuffer?.set(decoded);
-        sourceCtx.putImageData(sourceImageData, 0, 0);
-        screenshot.value = sourceCanvas;
+        if (decoded.length === sourceBuffer.length) {
+          sourceBuffer.set(decoded);
+          sourceCtx.putImageData(sourceImageData, 0, 0);
+          screenshot.value = sourceCanvas;
+        }
       }
       position.value = { x: event.payload.cursor_x, y: event.payload.cursor_y };
       updateCursorVelocity(event.payload.cursor_x, event.payload.cursor_y);
