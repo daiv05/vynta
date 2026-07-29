@@ -52,6 +52,7 @@ const {
   toggleSelectedLock,
   groupSelectedActions,
   ungroupSelectedActions,
+  isSelectionGrouped,
   undo,
   redo,
   clear,
@@ -92,8 +93,19 @@ const textInputRef = ref<HTMLTextAreaElement | null>(null);
 const textMirrorRef = ref<HTMLDivElement | null>(null);
 const resizeFrame = ref<number | null>(null);
 
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT"
+  );
+}
+
 function handleSharedEditHotkeys(event: KeyboardEvent) {
   if (textInput.visible) return;
+  if (isEditableTarget(event.target)) return;
   const key = event.key.toLowerCase();
   const isMeta = event.ctrlKey || event.metaKey;
   if (!isMeta) return;
@@ -380,6 +392,7 @@ defineExpose({
   toggleSelectionLock,
   groupSelection,
   ungroupSelection,
+  isSelectionGrouped,
 });
 </script>
 

@@ -31,9 +31,11 @@ import {
 } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
 import type { Component } from "vue";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDockModeConfig } from "../../composables/useDockModeConfig";
+import { useLineStyleControls } from "../../composables/useLineStyleControls";
+import { useShapeStyleControls } from "../../composables/useShapeStyleControls";
 import { useOverlayStore } from "../../stores/overlay";
 import { useSettingsStore } from "../../stores/settings";
 import { useToolsStore } from "../../stores/tools";
@@ -171,52 +173,30 @@ const visibleTools = computed(() => {
 });
 
 const moreOptionsOpen = ref(false);
+const moreOptionsToggleRef = ref<HTMLButtonElement | null>(null);
+const moreOptionsPanelRef = ref<HTMLDivElement | null>(null);
 
-function normalizeDashPattern(pattern: number[]) {
-  return pattern
-    .filter((value) => Number.isFinite(value) && value >= 0)
-    .map((value) => Math.round(value));
+function handleDocumentPointerDown(event: PointerEvent) {
+  if (!moreOptionsOpen.value) return;
+  const target = event.target as Node | null;
+  if (moreOptionsPanelRef.value?.contains(target)) return;
+  if (moreOptionsToggleRef.value?.contains(target)) return;
+  moreOptionsOpen.value = false;
 }
 
-const dashPresets = [
-  { key: "solid", pattern: [] as number[] },
-  { key: "dashed", pattern: [14, 10] as number[] },
-  { key: "dotted", pattern: [2, 10] as number[] },
-] as const;
+onMounted(() => {
+  globalThis.document.addEventListener("pointerdown", handleDocumentPointerDown);
+});
 
-function patternForWidth(pattern: number[]) {
-  if (pattern.length === 0) return [];
-  const width = Math.max(1, Math.round(strokeWidth.value));
-  const on = pattern[0] ?? 0;
-  const off = pattern[1] ?? on;
+onBeforeUnmount(() => {
+  globalThis.document.removeEventListener("pointerdown", handleDocumentPointerDown);
+});
 
-  if (on <= 3) {
-    return [Math.max(1, Math.round(width * 0.2)), Math.max(6, Math.round(width * 1.6))];
-  }
-
-  return [Math.max(on, Math.round(width * 1.2)), Math.max(off, Math.round(width * 0.9))];
-}
-
-const dashPresetOrder = ["solid", "dashed", "dotted"] as const;
-
-function inferDashPresetKey(pattern: number[]) {
-  if (pattern.length === 0) return "solid" as const;
-  const first = Math.max(0, pattern[0] ?? 0);
-  const width = Math.max(1, Math.round(strokeWidth.value));
-  const dottedThreshold = Math.max(3, Math.round(width * 0.45));
-  if (first <= dottedThreshold) return "dotted" as const;
-  return "dashed" as const;
-}
-
-const dashPresetKey = computed(() => inferDashPresetKey(normalizeDashPattern(dashPattern.value)));
-
-function nextDashPattern() {
-  const currentIndex = dashPresetOrder.findIndex((key) => key === dashPresetKey.value);
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % dashPresetOrder.length : 0;
-  const nextKey = dashPresetOrder[nextIndex];
-  const preset = dashPresets.find((entry) => entry.key === nextKey) ?? dashPresets[0];
-  settingsStore.setDashPattern(patternForWidth([...preset.pattern]));
-}
+const { dashPresetKey, nextDashPattern } = useLineStyleControls({
+  dashPattern,
+  strokeWidth,
+  setDashPattern: settingsStore.setDashPattern,
+});
 
 const dashLabel = computed(() => {
   const key = dashPresetKey.value;
@@ -292,15 +272,12 @@ const isTextTool = computed(() => selectedTool.value === "text");
 const isRectTool = computed(() => selectedTool.value === "rect");
 const isArrowTool = computed(() => selectedTool.value === "arrow");
 
-const radiusPresets = [0, 8, 16, 24, 32] as const;
-
-function nextBorderRadius() {
-  const currentIndex = radiusPresets.findIndex((value) => value === borderRadius.value);
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % radiusPresets.length : 0;
-  settingsStore.setBorderRadius(radiusPresets[nextIndex]);
-}
-
-const arrowStyleOrder = ["simple", "filled", "double", "thick", "stealth"] as const;
+const { nextBorderRadius, nextArrowStyle } = useShapeStyleControls({
+  borderRadius,
+  arrowStyle,
+  setBorderRadius: settingsStore.setBorderRadius,
+  setArrowStyle: settingsStore.setArrowStyle,
+});
 
 const arrowStyleBadge = computed(() => {
   const badgeByStyle: Record<typeof arrowStyle.value, string> = {
@@ -313,11 +290,9 @@ const arrowStyleBadge = computed(() => {
   return badgeByStyle[arrowStyle.value];
 });
 
-function nextArrowStyle() {
-  const currentIndex = arrowStyleOrder.findIndex((value) => value === arrowStyle.value);
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % arrowStyleOrder.length : 0;
-  settingsStore.setArrowStyle(arrowStyleOrder[nextIndex]);
-}
+const arrowStyleLabel = computed(() =>
+  t(`home.dock.shapes.arrowStyles.${arrowStyle.value}`),
+);
 
 function toggleTextWeight() {
   settingsStore.setTextWeight(textWeight.value === "bold" ? "normal" : "bold");
@@ -403,6 +378,7 @@ function setTextAlign(align: "left" | "center" | "right") {
         <span class="tooltip-text">{{ $t("hotkeys.tools.clear") }}</span>
       </button>
       <button
+        ref="moreOptionsToggleRef"
         type="button"
         class="dock-btn tooltip"
         :class="{ active: moreOptionsOpen }"
@@ -414,6 +390,7 @@ function setTextAlign(align: "left" | "center" | "right") {
 
       <div
         v-if="moreOptionsOpen"
+        ref="moreOptionsPanelRef"
         class="more-options-overlay"
         @pointerdown.stop
       >
@@ -422,6 +399,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           type="button"
           class="dock-btn tooltip"
           :class="{ active: true }"
+          :aria-label="`${$t('home.dock.strokeDash')}: ${dashLabel}`"
           @click="nextDashPattern"
         >
           <component :is="lineStyleIcon" class="dock-icon" />
@@ -433,6 +411,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           v-if="controls.lockSelection"
           type="button"
           class="dock-btn tooltip"
+          :aria-label="$t('home.dock.lockSelection')"
           @click="emit('toggle-lock')"
         >
           <Lock class="dock-icon" />
@@ -442,6 +421,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           v-if="controls.groupSelection"
           type="button"
           class="dock-btn tooltip"
+          :aria-label="$t('home.dock.toggleGroupSelection')"
           @click="handleToggleGroupSelection"
         >
           <Group class="dock-icon" />
@@ -452,6 +432,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           type="button"
           class="dock-btn tooltip"
           :class="{ active: smoothingEnabled }"
+          :aria-label="$t('hotkeys.tools.smoothing')"
           @click="settingsStore.setSmoothingEnabled(!smoothingEnabled)"
         >
           <Waves class="dock-icon" />
@@ -462,6 +443,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           type="button"
           class="dock-btn tooltip"
           :class="{ active: autoEraseEnabled }"
+          :aria-label="$t('hotkeys.tools.autoErase')"
           @click="settingsStore.setAutoEraseEnabled(!autoEraseEnabled)"
         >
           <Timer class="dock-icon" />
@@ -472,6 +454,7 @@ function setTextAlign(align: "left" | "center" | "right") {
           type="button"
           class="dock-btn tooltip"
           :class="{ active: borderRadius > 0 }"
+          :aria-label="`${$t('home.dock.shapes.cornerRadius')}: ${borderRadius}px`"
           @click="nextBorderRadius"
         >
           <Square class="dock-icon" />
@@ -485,12 +468,13 @@ function setTextAlign(align: "left" | "center" | "right") {
           type="button"
           class="dock-btn tooltip"
           :class="{ active: true }"
+          :aria-label="`${$t('home.dock.shapes.arrowStyle')}: ${arrowStyleLabel}`"
           @click="nextArrowStyle"
         >
           <ArrowUpRight class="dock-icon" />
           <span class="icon-badge icon-badge-text">{{ arrowStyleBadge }}</span>
           <span class="tooltip-text"
-            >{{ $t("home.dock.shapes.arrowStyle") }}: {{ $t(`home.dock.shapes.arrowStyles.${arrowStyle}`) }}</span
+            >{{ $t("home.dock.shapes.arrowStyle") }}: {{ arrowStyleLabel }}</span
           >
         </button>
         <template v-if="controls.textOptions && isTextTool">
@@ -498,6 +482,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textWeight === 'bold' }"
+            :aria-label="$t('home.dock.text.bold')"
             @click="toggleTextWeight"
           >
             <Bold class="dock-icon" />
@@ -507,6 +492,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textStyle === 'italic' }"
+            :aria-label="$t('home.dock.text.italic')"
             @click="toggleTextStyle"
           >
             <Italic class="dock-icon" />
@@ -516,6 +502,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textDecoration === 'underline' }"
+            :aria-label="$t('home.dock.text.underline')"
             @click="toggleTextDecoration"
           >
             <Underline class="dock-icon" />
@@ -525,6 +512,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textAlign === 'left' }"
+            :aria-label="$t('home.dock.text.alignLeft')"
             @click="setTextAlign('left')"
           >
             <AlignLeft class="dock-icon" />
@@ -534,6 +522,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textAlign === 'center' }"
+            :aria-label="$t('home.dock.text.alignCenter')"
             @click="setTextAlign('center')"
           >
             <AlignCenter class="dock-icon" />
@@ -543,6 +532,7 @@ function setTextAlign(align: "left" | "center" | "right") {
             type="button"
             class="dock-btn tooltip"
             :class="{ active: textAlign === 'right' }"
+            :aria-label="$t('home.dock.text.alignRight')"
             @click="setTextAlign('right')"
           >
             <AlignRight class="dock-icon" />
@@ -800,24 +790,29 @@ function setTextAlign(align: "left" | "center" | "right") {
   transform: translateY(-50%);
 }
 
-.tooltip:hover .tooltip-text {
+.tooltip:hover .tooltip-text,
+.tooltip:focus-visible .tooltip-text {
   opacity: 1;
   transform: translateX(-50%) translateY(-2px);
 }
 
-.tooltip:hover {
+.tooltip:hover,
+.tooltip:focus-visible {
   z-index: 30;
 }
 
-.tooltip-bottom .tooltip:hover .tooltip-text {
+.tooltip-bottom .tooltip:hover .tooltip-text,
+.tooltip-bottom .tooltip:focus-visible .tooltip-text {
   transform: translateX(-50%) translateY(2px);
 }
 
-.tooltip-left .tooltip:hover .tooltip-text {
+.tooltip-left .tooltip:hover .tooltip-text,
+.tooltip-left .tooltip:focus-visible .tooltip-text {
   transform: translateY(-50%) translateX(-2px);
 }
 
-.tooltip-right .tooltip:hover .tooltip-text {
+.tooltip-right .tooltip:hover .tooltip-text,
+.tooltip-right .tooltip:focus-visible .tooltip-text {
   transform: translateY(-50%) translateX(2px);
 }
 

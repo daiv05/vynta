@@ -13,12 +13,12 @@
     "dock": {
       "close": "Cerrar modo",
       "color": "Color",
-      "moreOptions": "Mas opciones",
-      "strokeDash": "Estilo de linea",
-      "lockSelection": "Bloquear/Desbloquear seleccion",
-      "toggleGroupSelection": "Agrupar/Desagrupar seleccion",
+      "moreOptions": "Más opciones",
+      "strokeDash": "Estilo de línea",
+      "lockSelection": "Bloquear/Desbloquear selección",
+      "toggleGroupSelection": "Agrupar/Desagrupar selección",
       "dashOptions": {
-        "solid": "Solida",
+        "solid": "Sólida",
         "dashed": "Guiones",
         "dotted": "Punteada"
       },

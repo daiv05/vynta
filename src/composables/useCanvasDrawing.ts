@@ -651,6 +651,14 @@ export function useCanvasDrawing(options: {
     return true;
   }
 
+  function isSelectionGrouped() {
+    const selected = getSelectedActions().filter((entry) => !entry.locked);
+    if (selected.length < 2) return false;
+    const groupId = selected[0].groupId;
+    if (!groupId) return false;
+    return selected.every((entry) => entry.groupId === groupId);
+  }
+
   function ungroupSelectedActions() {
     const selected = getSelectedActions();
     if (selected.length === 0) return false;
@@ -1100,6 +1108,7 @@ export function useCanvasDrawing(options: {
     toggleSelectedLock,
     groupSelectedActions,
     ungroupSelectedActions,
+    isSelectionGrouped,
     undo,
     redo,
     redraw,

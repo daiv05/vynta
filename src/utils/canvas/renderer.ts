@@ -199,9 +199,8 @@ function drawArrow(ctx: CanvasRenderingContext2D, action: DrawAction) {
   };
 
   const drawTailHead = (tip: Point) => {
-    const next = points.length > 2 ? points[1] : points[1];
-    if (!next) return;
-    const tailAngle = Math.atan2(tip.y - next.y, tip.x - next.x);
+    const reversedPoints = [...points].reverse();
+    const tailAngle = computeSmoothedAngle(reversedPoints, angleWindow);
     drawHead(tip, tailAngle);
   };
 
@@ -424,14 +423,16 @@ export function drawAction(
       ctx.font = buildFont(adjustedAction, size, family);
       ctx.textBaseline = "top";
       ctx.textAlign = align;
-      const ratio = ctx.getTransform().a || 1;
-      const canvasWidth = ctx.canvas.width / ratio;
+      const transform = ctx.getTransform();
+      const scaleX = transform.a || 1;
+      const worldLeft = -transform.e / scaleX;
+      const worldRight = (ctx.canvas.width - transform.e) / scaleX;
       const maxWidth =
         align === "center"
-          ? Math.max(20, Math.min(point.x, canvasWidth - point.x) * 2 - 8)
+          ? Math.max(20, Math.min(point.x - worldLeft, worldRight - point.x) * 2 - 8)
           : align === "right"
-            ? Math.max(20, point.x - 8)
-            : Math.max(20, canvasWidth - point.x - 8);
+            ? Math.max(20, point.x - worldLeft - 8)
+            : Math.max(20, worldRight - point.x - 8);
       const lines = wrapText(ctx, adjustedAction.text, maxWidth);
       lines.forEach((line, index) => {
         const y = point.y + index * lineHeight;
@@ -445,11 +446,14 @@ export function drawAction(
               : align === "right"
                 ? point.x - textWidth
                 : point.x;
+          ctx.save();
+          ctx.setLineDash([]);
+          ctx.lineWidth = Math.max(1, size * 0.06);
           ctx.beginPath();
           ctx.moveTo(startX, lineY);
           ctx.lineTo(startX + textWidth, lineY);
-          ctx.lineWidth = Math.max(1, size * 0.06);
           ctx.stroke();
+          ctx.restore();
         }
       });
     }

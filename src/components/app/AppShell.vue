@@ -352,7 +352,7 @@ function applyOverlayPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
-  settingsStore.setDashPattern([...payload.dashPattern]);
+  settingsStore.setDashPattern([...(payload.dashPattern ?? [])]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
   settingsStore.setTextWeight(payload.textWeight ?? "normal");

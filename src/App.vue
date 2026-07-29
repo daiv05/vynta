@@ -61,6 +61,7 @@ const isZoom = computed(() => {
   <CursorHighlightShell v-else-if="isCursorHighlight" />
   <SpotlightShell v-else-if="isSpotlight" />
   <ZoomShell v-else-if="isZoom && settingsReady && zoomMotor === 'dxgi'" />
+  <div v-else-if="isZoom" class="zoom-pending" />
   <WhiteboardShell v-else-if="isWhiteboard" />
   <AppShell v-else />
   <ToastManager />

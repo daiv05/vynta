@@ -173,7 +173,7 @@ function applyPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
-  settingsStore.setDashPattern([...payload.dashPattern]);
+  settingsStore.setDashPattern([...(payload.dashPattern ?? [])]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
   settingsStore.setTextWeight(payload.textWeight ?? "normal");
@@ -222,9 +222,11 @@ function handleToggleLockSelection() {
 }
 
 function handleToggleGroupSelection() {
-  const grouped = canvasStageRef.value?.groupSelection?.();
-  if (grouped) return;
-  canvasStageRef.value?.ungroupSelection?.();
+  if (canvasStageRef.value?.isSelectionGrouped?.()) {
+    canvasStageRef.value?.ungroupSelection?.();
+  } else {
+    canvasStageRef.value?.groupSelection?.();
+  }
 }
 
 function handleExport() {
