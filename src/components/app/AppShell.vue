@@ -30,8 +30,15 @@ const { quickColorSlots } = storeToRefs(toolsStore);
 const {
   strokeColor,
   strokeWidth,
+  dashPattern,
   textFont,
   textSize,
+  textWeight,
+  textStyle,
+  textDecoration,
+  textAlign,
+  borderRadius,
+  arrowStyle,
   smoothingEnabled,
   autoEraseDelay,
   gradientEnabled,
@@ -251,8 +258,15 @@ const overlayPayload = computed<OverlayPayload>(() => ({
   enabledTools: { ...enabledTools.value },
   strokeColor: strokeColor.value,
   strokeWidth: strokeWidth.value,
+  dashPattern: [...dashPattern.value],
   textFont: textFont.value,
   textSize: textSize.value,
+  textWeight: textWeight.value,
+  textStyle: textStyle.value,
+  textDecoration: textDecoration.value,
+  textAlign: textAlign.value,
+  borderRadius: borderRadius.value,
+  arrowStyle: arrowStyle.value,
   smoothingEnabled: smoothingEnabled.value,
   cursorHighlightColor: cursorHighlightColor.value,
   cursorHighlightSize: cursorHighlightSize.value,
@@ -338,8 +352,15 @@ function applyOverlayPayload(payload: OverlayPayload) {
   overlayStore.enabledTools = { ...payload.enabledTools };
   settingsStore.setStrokeColor(payload.strokeColor);
   settingsStore.setStrokeWidth(payload.strokeWidth);
+  settingsStore.setDashPattern([...(payload.dashPattern ?? [])]);
   settingsStore.setTextFont(payload.textFont);
   settingsStore.setTextSize(payload.textSize);
+  settingsStore.setTextWeight(payload.textWeight ?? "normal");
+  settingsStore.setTextStyle(payload.textStyle ?? "normal");
+  settingsStore.setTextDecoration(payload.textDecoration ?? "none");
+  settingsStore.setTextAlign(payload.textAlign ?? "left");
+  settingsStore.setBorderRadius(payload.borderRadius ?? 0);
+  settingsStore.setArrowStyle(payload.arrowStyle ?? "simple");
   settingsStore.setSmoothingEnabled(payload.smoothingEnabled);
   settingsStore.setAutoEraseEnabled(payload.autoEraseEnabled);
   settingsStore.setAutoEraseDelay(payload.autoEraseDelay);

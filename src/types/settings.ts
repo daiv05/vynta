@@ -6,6 +6,7 @@ export interface AppSettings {
   selectedTool: ToolId;
   strokeColor: string;
   strokeWidth: number;
+  dashPattern: number[];
   textFont: string;
   textSize: number;
   toolDefaults: Record<ToolId, ToolDefaults>;

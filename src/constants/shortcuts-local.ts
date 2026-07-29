@@ -6,6 +6,7 @@ export const LOCAL_SHORTCUTS: ShortcutDefinition[] = [
   { id: "tool-marker", label: "Marcador", accelerator: "M" },
   { id: "tool-rect", label: "Rectángulo", accelerator: "R" },
   { id: "tool-ellipse", label: "Elipse", accelerator: "O" },
+  { id: "tool-line", label: "Línea", accelerator: "L" },
   { id: "tool-arrow", label: "Flecha", accelerator: "A" },
   { id: "tool-text", label: "Texto", accelerator: "T" },
   { id: "tool-eraser", label: "Goma", accelerator: "E" },

@@ -10,6 +10,7 @@ export function useOverlayWindow() {
     isUpdating.value = true;
     try {
       await invoke("set_overlay_visible", { visible });
+      overlayVisible.value = visible;
     } finally {
       isUpdating.value = false;
     }

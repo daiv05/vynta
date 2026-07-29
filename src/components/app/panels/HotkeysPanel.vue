@@ -228,6 +228,7 @@ const shortcutSections = computed(() => [
       shortcutItem("tool-marker", t("hotkeys.tools.marker")),
       shortcutItem("tool-rect", t("hotkeys.tools.rect")),
       shortcutItem("tool-ellipse", t("hotkeys.tools.ellipse")),
+      shortcutItem("tool-line", t("hotkeys.tools.line")),
       shortcutItem("tool-arrow", t("hotkeys.tools.arrow")),
       shortcutItem("tool-text", t("hotkeys.tools.text")),
       shortcutItem("tool-eraser", t("hotkeys.tools.eraser")),

@@ -39,6 +39,28 @@ These shortcuts are active **while the Live Draw overlay is visible**:
 | `Ctrl + M` | Toggle stroke smoothing |
 | `Escape` | Clear all annotations |
 
+## Selection & Editing Shortcuts
+
+These shortcuts are active when the **Select** tool is used in Live Draw or Whiteboard:
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl + C` | Copy current selection |
+| `Ctrl + V` | Paste copied selection |
+| `Ctrl + D` | Duplicate current selection |
+| `Ctrl + L` | Lock / Unlock current selection |
+| `Ctrl + G` | Group current selection |
+| `Ctrl + Shift + G` | Ungroup current selection |
+
+### Selection Behavior
+
+- Use **Ctrl / Cmd / Shift + click** with the Select tool to add/remove items from the current selection.
+- Clicking a grouped item selects the **entire group** as a single unit.
+- Moving a grouped item moves the entire group.
+- **Lock / Unlock** applies to the selected unit, including all members of a selected group.
+- Grouping an item that already belongs to a group with external items will merge them into one group.
+- Locked items cannot be moved or erased until unlocked.
+
 ## Customizing Shortcuts
 
 All global shortcuts can be customized from the **Hotkeys** panel in settings:
