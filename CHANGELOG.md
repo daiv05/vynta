@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/daiv05/vynta/compare/vynta-app-v1.2.0...vynta-app-v1.3.0) (2026-07-29)
+
+
+### Features
+
+* enhance whiteboard and dock ([c3d26d4](https://github.com/daiv05/vynta/commit/c3d26d4a7ef9693c525eecfdf38aab651b405232))
+* enhance whiteboard functionality with text styling and dock improvements ([cc330c2](https://github.com/daiv05/vynta/commit/cc330c2394a7033a97ca0a8aee525f324248ec67))
+* improve selection handling and add line style controls ([1b911d7](https://github.com/daiv05/vynta/commit/1b911d7f4e0e558ecd8740ab46566c0dcc773356))
+
 ## [1.2.0](https://github.com/daiv05/vynta/compare/vynta-app-v1.1.2...vynta-app-v1.2.0) (2026-07-20)
 
 
